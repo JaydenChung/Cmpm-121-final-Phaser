@@ -4,25 +4,35 @@ class GameScene extends Phaser.Scene {
     }
 
     preload(){
-        this.load.spritesheet('plant', 'assets/GRASS+.png', {
-            frameWidth: 10, frameHeight: 20
+        this.load.spritesheet("tilemap", "assets/GRASS+.png", {
+            frameWidth: 16,
+            frameHeight: 16
         });
-        this.load.spritesheet('player', 'assets/GRASS+.png', {
-            frameWidth: 28, frameHeight: 9
-        });
+        this.load.image("BG", "assets/mapBG.png")
     }
 
     create() {
-        const plant = this.add.image(0, 0, "plant").setOrigin(0,0);
+        const backGround = this.add.image(0, 0, "BG").setOrigin(0,0)
 
-        plant.displayWidth = this.game.config.width;
-        plant.displayHeight = this.game.config.height;
+        //plant.displayWidth = this.game.config.width;
+        //plant.displayHeight = this.game.config.height;
 
         //this.createMap()
 
-        //create player sprite not working 
-        this.player = this.physics.add.sprite(config.width/2, config.height/2, 'player')
-        this.player.body.setSize(8000, 8000)
+        //create player
+        this.player = this.add.sprite(config.width/2, config.height/2, "player");
+        this.player.scale = 4;
+
+        this.anims.create({
+
+            key: 'playerAnim',
+            frames: this.anims.generateFrameNumbers("tilemap", {start: 334}),
+            repeat: 0, 
+            frameRate: 0
+        
+        });
+        this.player.play('playerAnim')
+
 
         // Sun and water counters
         this.sun = 0;
@@ -33,10 +43,17 @@ class GameScene extends Phaser.Scene {
         this.waterText = this.add.text(10, 30, 'Water: 0', { fontSize: '16px', color: '#fff' });
 
         // Add a plant
-        this.plant = this.add.sprite(200, 200, 'plant', 0);  // Frame 0 is the first growth stage
+        //this.plant = this.add.sprite(200, 200, 'plant', 0);  // Frame 0 is the first growth stage
 
         // Input to add sun or water
         this.input.on('pointerdown', this.addResources, this);
+
+
+        //player controls (could be streamlined) (1/2)
+        this.wKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);    
+        this.sKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S); 
+        this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);    
+        this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D); 
     }
 
     update() {
@@ -44,6 +61,29 @@ class GameScene extends Phaser.Scene {
         if (this.sun >= 10 && this.water >= 5) {
             this.growPlant();
         }
+
+        //player movement (2/2)
+        if (this.wKey.isDown) {
+
+            if (this.player.y > (this.player.displayHeight/2)){
+                this.player.y -= 5.5
+            }
+        } else if (this.sKey.isDown) {
+
+            if (this.player.y < (config.height-35)){
+                this.player.y += 5.5
+            }
+        } else if (this.aKey.isDown) {
+
+            if (this.player.x > (this.player.displayWidth/2)){
+                this.player.x -= 5.5
+            }
+        } else if (this.dKey.isDown) {
+
+            if (this.player.x < config.width-20){
+                this.player.x += 5.5
+            }
+        } 
     }
 
     addResources(pointer) {
