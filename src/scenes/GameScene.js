@@ -13,6 +13,7 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
+        this.gridSize = 64;
         const backGround = this.add.image(0, 0, "BG").setOrigin(0,0)
 
         //create player
@@ -32,11 +33,17 @@ class GameScene extends Phaser.Scene {
         this.plant.scale = 2.5
         this.newPlant = new PlantA(this.plant); //attaches the plant sprite into newPlant obj
 
+        // Highlight sprite for grid hover
+        this.highlight = this.add.rectangle(0, 0, this.gridSize, this.gridSize, 0x00ff00, 0.5);
+        this.highlight.setOrigin(0.5, 0.5); // Center the rectangle
+        this.highlight.setVisible(false); // Hide initially
+
+         // Input events
+        this.input.on('pointermove', this.updateHighlight, this);
+        this.input.on('pointerdown', this.placeShrub, this);
+
         console.log(this.newPlant.plantObject.setFrame(this.newPlant.STAGE2)); //this is how you change the sprite
         //above code could probally be implimented in updatePlant() in PlantDetails.js
-
-        // Input to add sun or water
-        this.input.on('pointerdown', this.addResources, this);
 
 
         //player controls (could be streamlined) (1/2)
@@ -47,33 +54,67 @@ class GameScene extends Phaser.Scene {
     }
 
     update() {
-        // Check for growth stage updates
-        if (this.sun >= 10 && this.water >= 5) {
-            this.growPlant();
+        const playerSpeed = this.gridSize;
+
+        // Move the player and snap to grid
+        if (Phaser.Input.Keyboard.JustDown(this.wKey)) {
+            this.player.y -= playerSpeed;
+        } else if (Phaser.Input.Keyboard.JustDown(this.sKey)) {
+            this.player.y += playerSpeed;
+        } else if (Phaser.Input.Keyboard.JustDown(this.aKey)) {
+            this.player.x -= playerSpeed;
+        } else if (Phaser.Input.Keyboard.JustDown(this.dKey)) {
+            this.player.x += playerSpeed;
         }
+    
+        // Snap player position to the center of the grid
+        this.player.x = Math.floor(this.player.x / this.gridSize) * this.gridSize + this.gridSize / 2;
+        this.player.y = Math.floor(this.player.y / this.gridSize) * this.gridSize + this.gridSize / 2;
+    }
 
-        //player movement (2/2)
-        if (this.wKey.isDown) {
-
-            if (this.player.y > (this.player.displayHeight/2)){
-                this.player.y -= 5.5
+    placeShrub(pointer) {
+        // Get the grid position where the user clicked
+        const shrubX = Math.floor(pointer.x / this.gridSize) * this.gridSize + this.gridSize / 2;
+        const shrubY = Math.floor(pointer.y / this.gridSize) * this.gridSize + this.gridSize / 2;
+    
+        // Get the player's current grid position
+        const playerX = Math.floor(this.player.x / this.gridSize) * this.gridSize + this.gridSize / 2;
+        const playerY = Math.floor(this.player.y / this.gridSize) * this.gridSize + this.gridSize / 2;
+    
+        // Check if the clicked position is adjacent to the player's position
+        const isAdjacent = (
+            (Math.abs(shrubX - playerX) === this.gridSize && shrubY === playerY) || // Left or right
+            (Math.abs(shrubY - playerY) === this.gridSize && shrubX === playerX)   // Up or down
+        );
+    
+        if (isAdjacent) {
+            // Create a new shrub at the clicked location
+            const newShrub = this.add.sprite(shrubX, shrubY, "tilemap", 294); // Assuming frame 294 is the shrub
+            newShrub.scale = 4;
+    
+            // Optional: Add animation if needed
+            if (!this.anims.exists('shrubAnim')) {
+                this.anims.create({
+                    key: 'shrubAnim',
+                    frames: this.anims.generateFrameNumbers("tilemap", { start: 294, end: 294 }),
+                    frameRate: 1,
+                    repeat: 0
+                });
             }
-        } else if (this.sKey.isDown) {
-
-            if (this.player.y < (config.height-35)){
-                this.player.y += 5.5
-            }
-        } else if (this.aKey.isDown) {
-
-            if (this.player.x > (this.player.displayWidth/2)){
-                this.player.x -= 5.5
-            }
-        } else if (this.dKey.isDown) {
-
-            if (this.player.x < config.width-20){
-                this.player.x += 5.5
-            }
-        } 
+            newShrub.play('shrubAnim');
+        } else {
+            console.log("You can only place shrubs adjacent to the player.");
+        }
+    }
+    
+    updateHighlight(pointer) {
+        // Snap highlight to the nearest grid space
+        const highlightX = Math.floor(pointer.x / this.gridSize) * this.gridSize + this.gridSize / 2;
+        const highlightY = Math.floor(pointer.y / this.gridSize) * this.gridSize + this.gridSize / 2;
+    
+        // Update position of the highlight rectangle
+        this.highlight.setPosition(highlightX, highlightY);
+        this.highlight.setVisible(true);
     }
 
     addResources(pointer) {
@@ -97,21 +138,4 @@ class GameScene extends Phaser.Scene {
         }
     }
 
-//     createMap() {
-//         const tileWidth = 16; // Width of each tile
-//         const tileHeight = 16; // Height of each tile
-//         const rows = Math.floor(this.sys.game.config.height / tileHeight); // Fit rows in canvas
-//         const cols = Math.floor(this.sys.game.config.width / tileWidth);  // Fit columns in canvas
-    
-//         for (let row = 0; row < rows; row++) {
-//             for (let col = 0; col < cols; col++) {
-//                 this.add.grass(
-//                     col * tileWidth,  // X position
-//                     row * tileHeight, // Y position
-//                     'assets',         // Spritesheet key
-//                     0                 // Frame index
-//                 ).setOrigin(0, 0); // Anchor at top-left
-//             }
-//         }
-//     }
  }
