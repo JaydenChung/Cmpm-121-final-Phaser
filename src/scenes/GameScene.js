@@ -32,6 +32,9 @@ class GameScene extends Phaser.Scene {
         this.plant.scale = 2.5
         this.newPlant = new PlantA(this.plant); //attaches the plant sprite into newPlant obj
 
+        console.log(this.newPlant.plantObject.setFrame(this.newPlant.STAGE2)); //this is how you change the sprite
+        //above code could probally be implimented in updatePlant() in PlantDetails.js
+
         // Input to add sun or water
         this.input.on('pointerdown', this.addResources, this);
 
