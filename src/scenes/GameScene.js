@@ -4,6 +4,7 @@ class GameScene extends Phaser.Scene {
     }
 
     preload(){
+        this.load.script('PlantDetails','./src/PlantDetails.js')
         this.load.spritesheet("tilemap", "assets/GRASS+.png", {
             frameWidth: 16,
             frameHeight: 16
@@ -14,25 +15,9 @@ class GameScene extends Phaser.Scene {
     create() {
         const backGround = this.add.image(0, 0, "BG").setOrigin(0,0)
 
-        //plant.displayWidth = this.game.config.width;
-        //plant.displayHeight = this.game.config.height;
-
-        //this.createMap()
-
         //create player
-        this.player = this.add.sprite(config.width/2, config.height/2, "player");
+        this.player = this.add.sprite(config.width/2, config.height/2, "tilemap", 334);
         this.player.scale = 4;
-
-        this.anims.create({
-
-            key: 'playerAnim',
-            frames: this.anims.generateFrameNumbers("tilemap", {start: 334}),
-            repeat: 0, 
-            frameRate: 0
-        
-        });
-        this.player.play('playerAnim')
-
 
         // Sun and water counters
         this.sun = 0;
@@ -43,7 +28,9 @@ class GameScene extends Phaser.Scene {
         this.waterText = this.add.text(10, 30, 'Water: 0', { fontSize: '16px', color: '#fff' });
 
         // Add a plant
-        //this.plant = this.add.sprite(200, 200, 'plant', 0);  // Frame 0 is the first growth stage
+        this.plant = this.add.sprite(200, 200, "tilemap", 343);
+        this.plant.scale = 2.5
+        this.newPlant = new PlantA(this.plant); //attaches the plant sprite into newPlant obj
 
         // Input to add sun or water
         this.input.on('pointerdown', this.addResources, this);
