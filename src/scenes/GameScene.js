@@ -42,10 +42,11 @@ class GameScene extends Phaser.Scene {
         this.sunText = this.add.text(10, 10, 'Sun: 0', { fontSize: '16px', color: '#fff' });
         this.waterText = this.add.text(10, 30, 'Water: 0', { fontSize: '16px', color: '#fff' });
 
-        // Add a plant
-        this.plant = this.add.sprite(200, 200, "tilemap", 343);
-        this.plant.scale = 2.5
-        this.newPlant = new PlantA(this.plant); //attaches the plant sprite into newPlant obj
+        // Add plants
+        this.plants = [294, 340, 338]; //Plant sprites for stage 1
+        this.shrubs = []; //Shrub sprites for stage 2
+        this.trees = []; //Tree sprites for stage 3
+        this.plantIndex = 0; //Default Plant Index
 
         // Highlight sprite for grid hover
         this.highlight = this.add.rectangle(0, 0, this.gridSize, this.gridSize, 0x00ff00, 0.5);
@@ -56,17 +57,15 @@ class GameScene extends Phaser.Scene {
         this.input.on('pointermove', this.updateHighlight, this);
         this.input.on('pointerdown', this.placeShrub, this);
 
-
-        console.log(this.newPlant.plantObject.setFrame(this.newPlant.STAGE2)); //this is how you change the sprite
-        //above code could probally be implimented in updatePlant() in PlantDetails.js
-
-
         //player controls (could be streamlined) (1/2)
         this.wKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);    
         this.sKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S); 
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);    
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D); 
         this.oKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O); 
+        this.oneKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE); 
+        this.twoKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO); 
+        this.threeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE); 
 
         //randomize sun and water levels for each grid cell
         
@@ -86,6 +85,15 @@ class GameScene extends Phaser.Scene {
             this.player.x += playerSpeed;
         } else if (Phaser.Input.Keyboard.JustDown(this.oKey)) {
             this.nextTurn();
+        }
+
+        //Plant Switch
+        if (Phaser.Input.Keyboard.JustDown(this.oneKey)) {
+            this.plantIndex = 0;
+        } else if (Phaser.Input.Keyboard.JustDown(this.twoKey)) {
+            this.plantIndex = 1;
+        } else if (Phaser.Input.Keyboard.JustDown(this.threeKey)) {
+            this.plantIndex = 2;
         }
 
         
@@ -117,7 +125,7 @@ class GameScene extends Phaser.Scene {
     
         if (isAdjacent) {
             // Create a new shrub at the clicked location
-            const newShrub = this.add.sprite(shrubX, shrubY, "tilemap", 294); // Assuming frame 294 is the shrub
+            const newShrub = this.add.sprite(shrubX, shrubY, "tilemap", this.plants[this.plantIndex]); // Assuming frame 294 is the shrub
             newShrub.scale = 4;
             this.placedShrubs.push(newShrub);
             this.plantsPlacedThisTurn++;
@@ -126,7 +134,10 @@ class GameScene extends Phaser.Scene {
             if (!this.anims.exists('shrubAnim')) {
                 this.anims.create({
                     key: 'shrubAnim',
-                    frames: this.anims.generateFrameNumbers("tilemap", { start: 294, end: 294 }),
+                    frames: this.anims.generateFrameNumbers("tilemap", { 
+                        start: this.plants[this.plantsIndex], 
+                        end: this.plants[this.plantsIndex] 
+                    }),
                     frameRate: 1,
                     repeat: 0
                 });
