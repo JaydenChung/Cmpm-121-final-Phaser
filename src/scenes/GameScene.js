@@ -44,8 +44,8 @@ class GameScene extends Phaser.Scene {
 
         // Add plants
         this.plants = [294, 340, 338]; //Plant sprites for stage 1
-        this.shrubs = []; //Shrub sprites for stage 2
-        this.trees = []; //Tree sprites for stage 3
+        this.shrubs = [290, 341, 303]; //Shrub sprites for stage 2
+        this.trees = [285, 342, 306]; //Tree sprites for stage 3
         this.plantIndex = 0; //Default Plant Index
 
         // Highlight sprite for grid hover
