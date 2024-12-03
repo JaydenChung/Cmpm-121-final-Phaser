@@ -25,10 +25,18 @@ class GameScene extends Phaser.Scene {
         this.currentTurn = 1;
         this.turnText = this.add.text(10, 50, 'Turn: 1', { fontSize: '16px', color: '#fff' });
 
+        // Store placed shrubs
+        this.placedShrubs = [];
+
 
         // Sun and water counters
         this.sun = 0;
         this.water = 0;
+
+        // Create 2D arrays for sun and water levels based on grid size
+        this.sunLevels = [];
+        this.waterLevels = [];
+        this.resetResources();
 
         // Display counters
         this.sunText = this.add.text(10, 10, 'Sun: 0', { fontSize: '16px', color: '#fff' });
@@ -48,6 +56,7 @@ class GameScene extends Phaser.Scene {
         this.input.on('pointermove', this.updateHighlight, this);
         this.input.on('pointerdown', this.placeShrub, this);
 
+
         console.log(this.newPlant.plantObject.setFrame(this.newPlant.STAGE2)); //this is how you change the sprite
         //above code could probally be implimented in updatePlant() in PlantDetails.js
 
@@ -58,6 +67,9 @@ class GameScene extends Phaser.Scene {
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);    
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D); 
         this.oKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O); 
+
+        //randomize sun and water levels for each grid cell
+        
     }
 
     update() {
@@ -107,6 +119,7 @@ class GameScene extends Phaser.Scene {
             // Create a new shrub at the clicked location
             const newShrub = this.add.sprite(shrubX, shrubY, "tilemap", 294); // Assuming frame 294 is the shrub
             newShrub.scale = 4;
+            this.placedShrubs.push(newShrub);
             this.plantsPlacedThisTurn++;
     
             // Optional: Add animation if needed
@@ -134,31 +147,51 @@ class GameScene extends Phaser.Scene {
         this.highlight.setVisible(true);
     }
 
-    addResources(pointer) {
-        // Add resources based on click position
-        if (pointer.x < 400) {
-            this.sun += 1;
-            this.sunText.setText(`Sun: ${this.sun}`);
+    resetResources() {
+        // Randomize sun and water levels for each grid cell
+        for (let i = 0; i < 10; i++) {
+            this.sunLevels[i] = [];
+            this.waterLevels[i] = [];
+            for (let j = 0; j < 10; j++) {
+                this.sunLevels[i][j] = Phaser.Math.Between(0, 10); // Random sun level between 0 and 10
+                this.waterLevels[i][j] = Phaser.Math.Between(0, 5); // Random water level between 0 and 5
+            }
+        }
+    }
+
+    growPlant(shrubObj) {
+        const shrub = shrubObj.shrub;
+        const shrubX = shrubObj.x;
+        const shrubY = shrubObj.y;
+    
+        // Get the sun and water levels for the current grid cell
+        const sunLevel = this.sunLevels[shrubX][shrubY];
+        const waterLevel = this.waterLevels[shrubX][shrubY];
+    
+        // Check if the sun and water requirements are met
+        const sunRequirement = 5; // Example sun requirement
+        const waterRequirement = 2; // Example water requirement
+    
+        if (sunLevel >= sunRequirement && waterLevel >= waterRequirement) {
+            // Change the sprite to the grown plant
+            shrub.setTexture("tilemap", 264); // Grown plant sprite from spritesheet at (264, 186)
+            shrub.scale = 4; // Adjust scale if needed
+            console.log("Shrub has grown into a plant!");
         } else {
-            this.water += 1;
-            this.waterText.setText(`Water: ${this.water}`);
+            console.log("Not enough sun or water to grow the shrub.");
         }
     }
+    
 
-    growPlant() {
-        if (this.plant.frame.name < 3) { // Assuming 4 growth stages (frames 0-3)
-            this.plant.setFrame(this.plant.frame.name + 1);
-            this.sun -= 10;
-            this.water -= 5;
-            this.sunText.setText(`Sun: ${this.sun}`);
-            this.waterText.setText(`Water: ${this.water}`);
-        }
-    }
-
-    nextTurn(){
+    nextTurn() {
         this.currentTurn++;
+        this.plantsPlacedThisTurn = 0; // Reset plants placed for the new turn
+        
         this.turnText.setText(`Turn: ${this.currentTurn}`);
-        this.plantsPlacedThisTurn = 0; 
-        console.log(`Turn ${this.currentTurn} started!`);
+        //having issues changing shrub to plant
+        // this.placedShrubs.forEach((shrubObj) => {
+        //     this.growPlant(shrubObj.shrub);
+        // });
+        this.resetResources(); // Randomize sun and water levels for new turn
     }
  }
