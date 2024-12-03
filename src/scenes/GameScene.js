@@ -20,6 +20,11 @@ class GameScene extends Phaser.Scene {
         this.player = this.add.sprite(config.width/2, config.height/2, "tilemap", 334);
         this.player.scale = 4;
 
+        //add turns
+        this.currentTurn = 1;
+        this.turnText = this.add.text(10, 50, 'Turn: 1', { fontSize: '16px', color: '#fff' });
+
+
         // Sun and water counters
         this.sun = 0;
         this.water = 0;
@@ -51,6 +56,7 @@ class GameScene extends Phaser.Scene {
         this.sKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S); 
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);    
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D); 
+        this.oKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O); 
     }
 
     update() {
@@ -65,11 +71,16 @@ class GameScene extends Phaser.Scene {
             this.player.x -= playerSpeed;
         } else if (Phaser.Input.Keyboard.JustDown(this.dKey)) {
             this.player.x += playerSpeed;
+        } else if (Phaser.Input.Keyboard.JustDown(this.oKey)) {
+            this.nextTurn();
         }
+
+        
     
         // Snap player position to the center of the grid
         this.player.x = Math.floor(this.player.x / this.gridSize) * this.gridSize + this.gridSize / 2;
         this.player.y = Math.floor(this.player.y / this.gridSize) * this.gridSize + this.gridSize / 2;
+        
     }
 
     placeShrub(pointer) {
@@ -138,4 +149,10 @@ class GameScene extends Phaser.Scene {
         }
     }
 
+    nextTurn(){
+        this.currentTurn++;
+        this.turnText.setText(`Turn: ${this.currentTurn}`);
+
+        console.log(`Turn ${this.currentTurn} started!`);
+    }
  }
