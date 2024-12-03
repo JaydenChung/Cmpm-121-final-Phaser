@@ -21,6 +21,7 @@ class GameScene extends Phaser.Scene {
         this.player.scale = 4;
 
         //add turns
+        this.plantsPlacedThisTurn = 0;
         this.currentTurn = 1;
         this.turnText = this.add.text(10, 50, 'Turn: 1', { fontSize: '16px', color: '#fff' });
 
@@ -84,6 +85,10 @@ class GameScene extends Phaser.Scene {
     }
 
     placeShrub(pointer) {
+        if (this.plantsPlacedThisTurn >= 3) {
+            console.log("Maximum of 3 plants can be placed per turn.");
+            return;
+        }
         // Get the grid position where the user clicked
         const shrubX = Math.floor(pointer.x / this.gridSize) * this.gridSize + this.gridSize / 2;
         const shrubY = Math.floor(pointer.y / this.gridSize) * this.gridSize + this.gridSize / 2;
@@ -102,6 +107,7 @@ class GameScene extends Phaser.Scene {
             // Create a new shrub at the clicked location
             const newShrub = this.add.sprite(shrubX, shrubY, "tilemap", 294); // Assuming frame 294 is the shrub
             newShrub.scale = 4;
+            this.plantsPlacedThisTurn++;
     
             // Optional: Add animation if needed
             if (!this.anims.exists('shrubAnim')) {
@@ -152,7 +158,7 @@ class GameScene extends Phaser.Scene {
     nextTurn(){
         this.currentTurn++;
         this.turnText.setText(`Turn: ${this.currentTurn}`);
-
+        this.plantsPlacedThisTurn = 0; 
         console.log(`Turn ${this.currentTurn} started!`);
     }
  }
