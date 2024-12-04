@@ -87,18 +87,36 @@ class GameScene extends Phaser.Scene {
 
     update() {
         const playerSpeed = this.gridSize;
+        let newX = this.player.x;
+        let newY = this.player.y;
 
-        // Move the player and snap to grid
+        // Determine potential new position
         if (Phaser.Input.Keyboard.JustDown(this.wKey)) {
-            this.player.y -= playerSpeed;
+            newY -= playerSpeed;
         } else if (Phaser.Input.Keyboard.JustDown(this.sKey)) {
-            this.player.y += playerSpeed;
+            newY += playerSpeed;
         } else if (Phaser.Input.Keyboard.JustDown(this.aKey)) {
-            this.player.x -= playerSpeed;
+            newX -= playerSpeed;
         } else if (Phaser.Input.Keyboard.JustDown(this.dKey)) {
-            this.player.x += playerSpeed;
+            newX += playerSpeed;
         } else if (Phaser.Input.Keyboard.JustDown(this.oKey)) {
             this.nextTurn();
+            return;
+        }
+
+        // Snap new position to grid
+        const gridX = Math.floor(newX / this.gridSize);
+        const gridY = Math.floor(newY / this.gridSize);
+
+        // Check if the new grid cell is occupied by a plant
+        const isOccupied = this.placedPlants.some(plant => 
+            plant.x === gridX && plant.y === gridY
+        );
+
+        // Only move if the cell is not occupied
+        if (!isOccupied) {
+            this.player.x = gridX * this.gridSize + this.gridSize / 2;
+            this.player.y = gridY * this.gridSize + this.gridSize / 2;
         }
 
         // Plant Switch
@@ -109,12 +127,9 @@ class GameScene extends Phaser.Scene {
         } else if (Phaser.Input.Keyboard.JustDown(this.threeKey)) {
             this.plantIndex = 2;
         }
-    
-        // Snap player position to the center of the grid
-        this.player.x = Math.floor(this.player.x / this.gridSize) * this.gridSize + this.gridSize / 2;
-        this.player.y = Math.floor(this.player.y / this.gridSize) * this.gridSize + this.gridSize / 2;
     }
 
+ 
     handleClick(pointer) {
         // Get the grid position of the click
         const gridX = Math.floor(pointer.x / this.gridSize);
@@ -178,12 +193,17 @@ class GameScene extends Phaser.Scene {
             (Math.abs(plantX - playerX) === this.gridSize && plantY === playerY) || // Left or right
             (Math.abs(plantY - playerY) === this.gridSize && plantX === playerX)   // Up or down
         );
-    
-        if (isAdjacent) {
-            // Determine grid coordinates
-            const gridX = Math.floor(plantX / this.gridSize);
-            const gridY = Math.floor(plantY / this.gridSize);
 
+        // Determine grid coordinates
+        const gridX = Math.floor(plantX / this.gridSize);
+        const gridY = Math.floor(plantY / this.gridSize);
+
+        // Check if the grid cell is already occupied by a plant
+        const isOccupied = this.placedPlants.some(plant => 
+            plant.x === gridX && plant.y === gridY
+        );
+    
+        if (isAdjacent && !isOccupied) {
             // Create a new plant
             const newPlant = this.add.sprite(plantX, plantY, "tilemap", this.grassSprites[this.plantIndex]);
             newPlant.scale = 4;
@@ -198,6 +218,8 @@ class GameScene extends Phaser.Scene {
             });
 
             this.plantsPlacedThisTurn++;
+        } else if (isOccupied) {
+            console.log("Cannot place a plant on an already occupied grid cell.");
         } else {
             console.log("You can only place plants adjacent to the player.");
         }
