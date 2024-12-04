@@ -38,6 +38,14 @@ class GameScene extends Phaser.Scene {
         this.maxPlantsPerTurn = 3;
         this.turnText = this.add.text(10, 50, 'Turn: 1', { fontSize: '16px', color: '#fff' });
 
+        // Score tracking
+        this.score = 0;
+        this.scoreText = this.add.text(10, 70, 'Score: 0', { fontSize: '16px', color: '#fff' });
+
+        // Reaping tracking
+        this.sowedPlants = 0;
+        this.maxSowedPlants = 2; // As per the Unity script
+
         // Store placed plants with their growth information
         this.placedPlants = [];
 
@@ -64,7 +72,7 @@ class GameScene extends Phaser.Scene {
 
         // Input events
         this.input.on('pointermove', this.updateHighlight, this);
-        this.input.on('pointerdown', this.placePlant, this);
+        this.input.on('pointerdown', this.handleClick, this);
 
         // Player controls
         this.wKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);    
@@ -105,6 +113,50 @@ class GameScene extends Phaser.Scene {
         // Snap player position to the center of the grid
         this.player.x = Math.floor(this.player.x / this.gridSize) * this.gridSize + this.gridSize / 2;
         this.player.y = Math.floor(this.player.y / this.gridSize) * this.gridSize + this.gridSize / 2;
+    }
+
+    handleClick(pointer) {
+        // Get the grid position of the click
+        const gridX = Math.floor(pointer.x / this.gridSize);
+        const gridY = Math.floor(pointer.y / this.gridSize);
+
+        // Check if clicking on a fully grown plant
+        const plantToReap = this.placedPlants.find(plant => 
+            plant.x === gridX && 
+            plant.y === gridY && 
+            plant.currentStage === this.PlantGrowthStage.Tree
+        );
+
+        if (plantToReap) {
+            this.reapPlant(plantToReap);
+        } else {
+            // If not reaping, try to place a plant
+            this.placePlant(pointer);
+        }
+    }
+
+    reapPlant(plantObj) {
+        // Check if the plant is at the final stage (Tree)
+        if (plantObj.currentStage === this.PlantGrowthStage.Tree) {
+            // Increment score
+            this.score++;
+            this.scoreText.setText(`Score: ${this.score}`);
+
+            // Increment sowed plants
+            this.sowedPlants++;
+
+            // Remove the plant from the scene and placedPlants array
+            plantObj.sprite.destroy();
+            this.placedPlants = this.placedPlants.filter(plant => plant !== plantObj);
+
+            // Check if game is finished
+            if (this.sowedPlants === this.maxSowedPlants) {
+                console.log(`Game is finished, total plants sowed: ${this.sowedPlants}`);
+                // You might want to add game end logic here
+            }
+        } else {
+            console.log("You can only sow final stage plants (trees).");
+        }
     }
 
     placePlant(pointer) {
