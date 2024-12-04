@@ -150,6 +150,7 @@ class GameScene extends Phaser.Scene {
         }
     }
 
+    
     reapPlant(plantObj) {
         // Check if the plant is at the final stage (Tree)
         if (plantObj.currentStage === this.PlantGrowthStage.Tree) {
@@ -164,10 +165,12 @@ class GameScene extends Phaser.Scene {
             plantObj.sprite.destroy();
             this.placedPlants = this.placedPlants.filter(plant => plant !== plantObj);
 
-            // Check if game is finished
-            if (this.sowedPlants === this.maxSowedPlants) {
+            // Check if player has won
+            if (this.sowedPlants === 5) {
+                this.showWinScreen();
+            } else if (this.sowedPlants === this.maxSowedPlants) {
                 console.log(`Game is finished, total plants sowed: ${this.sowedPlants}`);
-                // You might want to add game end logic here
+                // Previous end game logic remains
             }
         } else {
             console.log("You can only sow final stage plants (trees).");
@@ -323,5 +326,50 @@ class GameScene extends Phaser.Scene {
         });
 
         this.resetResources(); // Randomize sun and water levels for new turn
+    }
+    showWinScreen() {
+        // Stop any ongoing game interactions
+        this.input.off('pointermove');
+        this.input.off('pointerdown');
+
+        // Create a win screen overlay
+        const overlay = this.add.rectangle(
+            config.width / 2, 
+            config.height / 2, 
+            config.width, 
+            config.height, 
+            0x000000, 
+            0.7
+        );
+
+        // Win text
+        const winText = this.add.text(
+            config.width / 2, 
+            config.height / 2, 
+            'Congratulations!\nYou Won!', 
+            { 
+                fontSize: '48px', 
+                color: '#ffffff', 
+                align: 'center' 
+            }
+        ).setOrigin(0.5);
+
+        // Restart button
+        const restartButton = this.add.text(
+            config.width / 2, 
+            config.height / 2 + 100, 
+            'Restart Game', 
+            { 
+                fontSize: '24px', 
+                color: '#00ff00', 
+                backgroundColor: '#333333',
+                padding: 10 
+            }
+        ).setOrigin(0.5)
+        .setInteractive()
+        .on('pointerdown', () => {
+            // Restart the scene
+            this.scene.restart();
+        });
     }
 }
