@@ -16,18 +16,30 @@ class GameScene extends Phaser.Scene {
         this.gridSize = 64;
         const backGround = this.add.image(0, 0, "BG").setOrigin(0,0)
 
-        //create player
+        // Plant Growth Stages
+        this.PlantGrowthStage = {
+            Grass: 0,
+            Shrub: 1,
+            Tree: 2
+        };
+
+        // Sprite sets for different plant types
+        this.grassSprites = [294, 340, 338];
+        this.shrubSprites = [290, 341, 303];
+        this.treeSprites = [285, 342, 306];
+
+        // Create player
         this.player = this.add.sprite(config.width/2, config.height/2, "tilemap", 334);
         this.player.scale = 4;
 
-        //add turns
+        // Turn and plant management
         this.plantsPlacedThisTurn = 0;
         this.currentTurn = 1;
+        this.maxPlantsPerTurn = 3;
         this.turnText = this.add.text(10, 50, 'Turn: 1', { fontSize: '16px', color: '#fff' });
 
-        // Store placed shrubs
-        this.placedShrubs = [];
-
+        // Store placed plants with their growth information
+        this.placedPlants = [];
 
         // Sun and water counters
         this.sun = 0;
@@ -42,22 +54,19 @@ class GameScene extends Phaser.Scene {
         this.sunText = this.add.text(10, 10, 'Sun: 0', { fontSize: '16px', color: '#fff' });
         this.waterText = this.add.text(10, 30, 'Water: 0', { fontSize: '16px', color: '#fff' });
 
-        // Add plants
-        this.plants = [294, 340, 338]; //Plant sprites for stage 1
-        this.shrubs = [290, 341, 303]; //Shrub sprites for stage 2
-        this.trees = [285, 342, 306]; //Tree sprites for stage 3
-        this.plantIndex = 0; //Default Plant Index
+        // Plant sprite selection
+        this.plantIndex = 0;
 
         // Highlight sprite for grid hover
         this.highlight = this.add.rectangle(0, 0, this.gridSize, this.gridSize, 0x00ff00, 0.5);
-        this.highlight.setOrigin(0.5, 0.5); // Center the rectangle
-        this.highlight.setVisible(false); // Hide initially
+        this.highlight.setOrigin(0.5, 0.5);
+        this.highlight.setVisible(false);
 
-         // Input events
+        // Input events
         this.input.on('pointermove', this.updateHighlight, this);
-        this.input.on('pointerdown', this.placeShrub, this);
+        this.input.on('pointerdown', this.placePlant, this);
 
-        //player controls (could be streamlined) (1/2)
+        // Player controls
         this.wKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);    
         this.sKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S); 
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);    
@@ -66,9 +75,6 @@ class GameScene extends Phaser.Scene {
         this.oneKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE); 
         this.twoKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO); 
         this.threeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE); 
-
-        //randomize sun and water levels for each grid cell
-        
     }
 
     update() {
@@ -87,7 +93,7 @@ class GameScene extends Phaser.Scene {
             this.nextTurn();
         }
 
-        //Plant Switch
+        // Plant Switch
         if (Phaser.Input.Keyboard.JustDown(this.oneKey)) {
             this.plantIndex = 0;
         } else if (Phaser.Input.Keyboard.JustDown(this.twoKey)) {
@@ -95,23 +101,21 @@ class GameScene extends Phaser.Scene {
         } else if (Phaser.Input.Keyboard.JustDown(this.threeKey)) {
             this.plantIndex = 2;
         }
-
-        
     
         // Snap player position to the center of the grid
         this.player.x = Math.floor(this.player.x / this.gridSize) * this.gridSize + this.gridSize / 2;
         this.player.y = Math.floor(this.player.y / this.gridSize) * this.gridSize + this.gridSize / 2;
-        
     }
 
-    placeShrub(pointer) {
-        if (this.plantsPlacedThisTurn >= 3) {
+    placePlant(pointer) {
+        if (this.plantsPlacedThisTurn >= this.maxPlantsPerTurn) {
             console.log("Maximum of 3 plants can be placed per turn.");
             return;
         }
+        
         // Get the grid position where the user clicked
-        const shrubX = Math.floor(pointer.x / this.gridSize) * this.gridSize + this.gridSize / 2;
-        const shrubY = Math.floor(pointer.y / this.gridSize) * this.gridSize + this.gridSize / 2;
+        const plantX = Math.floor(pointer.x / this.gridSize) * this.gridSize + this.gridSize / 2;
+        const plantY = Math.floor(pointer.y / this.gridSize) * this.gridSize + this.gridSize / 2;
     
         // Get the player's current grid position
         const playerX = Math.floor(this.player.x / this.gridSize) * this.gridSize + this.gridSize / 2;
@@ -119,32 +123,31 @@ class GameScene extends Phaser.Scene {
     
         // Check if the clicked position is adjacent to the player's position
         const isAdjacent = (
-            (Math.abs(shrubX - playerX) === this.gridSize && shrubY === playerY) || // Left or right
-            (Math.abs(shrubY - playerY) === this.gridSize && shrubX === playerX)   // Up or down
+            (Math.abs(plantX - playerX) === this.gridSize && plantY === playerY) || // Left or right
+            (Math.abs(plantY - playerY) === this.gridSize && plantX === playerX)   // Up or down
         );
     
         if (isAdjacent) {
-            // Create a new shrub at the clicked location
-            const newShrub = this.add.sprite(shrubX, shrubY, "tilemap", this.plants[this.plantIndex]); // Assuming frame 294 is the shrub
-            newShrub.scale = 4;
-            this.placedShrubs.push(newShrub);
+            // Determine grid coordinates
+            const gridX = Math.floor(plantX / this.gridSize);
+            const gridY = Math.floor(plantY / this.gridSize);
+
+            // Create a new plant
+            const newPlant = this.add.sprite(plantX, plantY, "tilemap", this.grassSprites[this.plantIndex]);
+            newPlant.scale = 4;
+
+            // Store plant with its growth information
+            this.placedPlants.push({
+                sprite: newPlant,
+                x: gridX,
+                y: gridY,
+                currentStage: this.PlantGrowthStage.Grass,
+                spriteSetIndex: this.plantIndex
+            });
+
             this.plantsPlacedThisTurn++;
-    
-            // Optional: Add animation if needed
-            if (!this.anims.exists('shrubAnim')) {
-                this.anims.create({
-                    key: 'shrubAnim',
-                    frames: this.anims.generateFrameNumbers("tilemap", { 
-                        start: this.plants[this.plantsIndex], 
-                        end: this.plants[this.plantsIndex] 
-                    }),
-                    frameRate: 1,
-                    repeat: 0
-                });
-            }
-            newShrub.play('shrubAnim');
         } else {
-            console.log("You can only place shrubs adjacent to the player.");
+            console.log("You can only place plants adjacent to the player.");
         }
     }
     
@@ -168,41 +171,83 @@ class GameScene extends Phaser.Scene {
                 this.waterLevels[i][j] = Phaser.Math.Between(0, 5); // Random water level between 0 and 5
             }
         }
+
+        // Update sun and water text
+        const averageSun = this.calculateAverageSun();
+        const averageWater = this.calculateAverageWater();
+        // this.sunText.setText(`Sun: ${averageSun.toFixed(1)}`);
+        // this.waterText.setText(`Water: ${averageWater.toFixed(1)}`);
     }
 
-    growPlant(shrubObj) {
-        const shrub = shrubObj.shrub;
-        const shrubX = shrubObj.x;
-        const shrubY = shrubObj.y;
+    calculateAverageSun() {
+        let totalSun = 0;
+        for (let i = 0; i < this.sunLevels.length; i++) {
+            for (let j = 0; j < this.sunLevels[i].length; j++) {
+                totalSun += this.sunLevels[i][j];
+            }
+        }
+        return totalSun / (this.sunLevels.length * this.sunLevels[0].length);
+    }
+
+    calculateAverageWater() {
+        let totalWater = 0;
+        for (let i = 0; i < this.waterLevels.length; i++) {
+            for (let j = 0; j < this.waterLevels[i].length; j++) {
+                totalWater += this.waterLevels[i][j];
+            }
+        }
+        return totalWater / (this.waterLevels.length * this.waterLevels[0].length);
+    }
+
+    growPlant(plantObj) {
+        const { sprite, x, y, currentStage, spriteSetIndex } = plantObj;
     
         // Get the sun and water levels for the current grid cell
-        const sunLevel = this.sunLevels[shrubX][shrubY];
-        const waterLevel = this.waterLevels[shrubX][shrubY];
+        const sunLevel = this.sunLevels[x][y];
+        const waterLevel = this.waterLevels[x][y];
     
-        // Check if the sun and water requirements are met
+        // Check if the sun and water requirements are met for growth
         const sunRequirement = 5; // Example sun requirement
         const waterRequirement = 2; // Example water requirement
     
         if (sunLevel >= sunRequirement && waterLevel >= waterRequirement) {
-            // Change the sprite to the grown plant
-            shrub.setTexture("tilemap", 264); // Grown plant sprite from spritesheet at (264, 186)
-            shrub.scale = 4; // Adjust scale if needed
-            console.log("Shrub has grown into a plant!");
+            // Advance to next growth stage if not already at final stage
+            if (currentStage < this.PlantGrowthStage.Tree) {
+                let nextSprites;
+                switch(currentStage) {
+                    case this.PlantGrowthStage.Grass:
+                        nextSprites = this.shrubSprites;
+                        break;
+                    case this.PlantGrowthStage.Shrub:
+                        nextSprites = this.treeSprites;
+                        break;
+                }
+                
+                // Update sprite to next growth stage
+                sprite.setTexture("tilemap", nextSprites[spriteSetIndex]);
+                
+                // Update plant object with new stage
+                plantObj.currentStage++;
+                console.log(`Plant at (${x},${y}) has grown to stage ${plantObj.currentStage}`);
+            } else {
+                console.log(`Plant at (${x},${y}) is fully grown!`);
+            }
         } else {
-            console.log("Not enough sun or water to grow the shrub.");
+            console.log(`Not enough sun (${sunLevel}) or water (${waterLevel}) to grow the plant at (${x},${y}).`);
         }
     }
-    
 
     nextTurn() {
         this.currentTurn++;
         this.plantsPlacedThisTurn = 0; // Reset plants placed for the new turn
         
         this.turnText.setText(`Turn: ${this.currentTurn}`);
-        //having issues changing shrub to plant
-        // this.placedShrubs.forEach((shrubObj) => {
-        //     this.growPlant(shrubObj.shrub);
-        // });
+        
+        // Attempt to grow each placed plant
+        this.placedPlants.forEach((plantObj) => {
+            this.growPlant(plantObj);
+        });
+
         this.resetResources(); // Randomize sun and water levels for new turn
     }
- }
+}
