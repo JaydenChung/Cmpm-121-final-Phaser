@@ -278,11 +278,17 @@ class GameScene extends Phaser.Scene {
 
     growPlant(plantObj) {
         const { sprite, x, y, currentStage, spriteSetIndex } = plantObj;
-    
-        // Get the sun and water levels for the current grid cell
-        const sunLevel = this.sunLevels[x][y];
-        const waterLevel = this.waterLevels[x][y];
-    
+
+    // Add bounds checking before accessing sun and water levels
+    if (x < 0 || x >= this.sunLevels.length || 
+        y < 0 || y >= this.sunLevels[0].length) {
+        console.error(`Invalid grid coordinates: (${x}, ${y})`);
+        return;
+    }
+
+    // Get the sun and water levels for the current grid cell
+    const sunLevel = this.sunLevels[x][y];
+    const waterLevel = this.waterLevels[x][y];
         // Check if the sun and water requirements are met for growth
         const sunRequirement = 5; // Example sun requirement
         const waterRequirement = 2; // Example water requirement
