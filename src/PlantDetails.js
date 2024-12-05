@@ -40,11 +40,6 @@ class PlantA extends Plants{
         this.plantObject = sprite;
         this.plantID = Math.floor(342 * generateRandom()) + Math.floor(generateRandom()*2/342); //creates a random ID
         this.updateCondition = false;
-
-        this.DEAD = 261;
-        this.STAGE1 = 343;
-        this.STAGE2 = 339;
-        this.STAGE3 = 304;
     }
 
     setIfUpdate(){ //checks if the plant can be updated or not

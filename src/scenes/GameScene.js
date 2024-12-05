@@ -5,6 +5,7 @@ class GameScene extends Phaser.Scene {
 
     preload(){
         this.load.script('PlantDetails','./src/PlantDetails.js')
+        this.load.script('SaveState','./src/SaveState.js')
         this.load.spritesheet("tilemap", "assets/GRASS+.png", {
             frameWidth: 16,
             frameHeight: 16
@@ -14,11 +15,12 @@ class GameScene extends Phaser.Scene {
 
     create() {
         this.gridSize = 64;
-        this.gridWidth = 10; // Adjust as needed
-        this.gridHeight = 10; // Adjust as needed
+        //change these around to solve bug???
+        this.gridWidth = 10; // Adjust as needed (OG value 10)
+        this.gridHeight = 10; // Adjust as needed (^)
 
         // Initialize the grid state as a Uint8Array
-        this.gridState = new Uint8Array(this.gridWidth * this.gridHeight);
+        this.gridState = new gridStateManager(this.gridWidth, this.gridHeight);
 
         const backGround = this.add.image(0, 0, "BG").setOrigin(0,0)
 
@@ -89,20 +91,9 @@ class GameScene extends Phaser.Scene {
         this.oneKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE); 
         this.twoKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO); 
         this.threeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
-        this.input.keyboard.on('keydown-F', () => this.saveGame(1)); // Save to slot 1
-        this.input.keyboard.on('keydown-L', () => this.loadGame(1));
+        this.input.keyboard.on('keydown-F', () => this.gridState.saveGame(1, this.returnGameState())); 
+        this.input.keyboard.on('keydown-L', () => this.gridState.loadGame(1, this)); 
     }
-
-    getGridValue(x, y) {
-        const index = y * this.gridWidth + x;
-        return this.gridState[index];
-    }
-
-    setGridValue(x, y, value) {
-        const index = y * this.gridWidth + x;
-        this.gridState[index] = value;
-    }
-
 
     update() {
         const playerSpeed = this.gridSize;
@@ -147,8 +138,19 @@ class GameScene extends Phaser.Scene {
             this.plantIndex = 2;
         }
     }
+    returnGameState(){
+        return {
+            gridState: Array.from(this.gridState.getGridState()), // Convert Uint8Array to normal array
+            player: this.player,
+            playerX: this.player.x,
+            playerY: this.player.y,
+            score: this.score,
+            turn: this.currentTurn,
+            placedDownPlants: this.placedPlants
+            // Serialize placedPlants without the sprite reference
+        }
+    }
 
- 
     handleClick(pointer) {
         // Get the grid position of the click
         const gridX = Math.floor(pointer.x / this.gridSize);
@@ -259,10 +261,10 @@ class GameScene extends Phaser.Scene {
 
     resetResources() {
         // Randomize sun and water levels for each grid cell
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i <= this.gridHeight; i++) {
             this.sunLevels[i] = [];
             this.waterLevels[i] = [];
-            for (let j = 0; j < 10; j++) {
+            for (let j = 0; j < this.gridHeight; j++) {
                 this.sunLevels[i][j] = Phaser.Math.Between(0, 10); // Random sun level between 0 and 10
                 this.waterLevels[i][j] = Phaser.Math.Between(0, 5); // Random water level between 0 and 5
             }
@@ -295,19 +297,21 @@ class GameScene extends Phaser.Scene {
         return totalWater / (this.waterLevels.length * this.waterLevels[0].length);
     }
 
+        //LOOK HERE FOR THE outofbounds Error
     growPlant(plantObj) {
         const { sprite, x, y, currentStage, spriteSetIndex } = plantObj;
+        // Add bounds checking before accessing sun and water levels
+        if (x < 0 || x >= this.sunLevels.length || 
+            y < 0 || y >= this.sunLevels[0].length) {
+            console.log(x>=this.sunLevels.length, y >= this.sunLevels[0].length);
+            console.error(`Invalid grid coordinates: (${x}, ${y})`);
+            return;
+        }
 
-    // Add bounds checking before accessing sun and water levels
-    if (x < 0 || x >= this.sunLevels.length || 
-        y < 0 || y >= this.sunLevels[0].length) {
-        console.error(`Invalid grid coordinates: (${x}, ${y})`);
-        return;
-    }
+        // Get the sun and water levels for the current grid cell
+        const sunLevel = this.sunLevels[x][y];
+        const waterLevel = this.waterLevels[x][y];
 
-    // Get the sun and water levels for the current grid cell
-    const sunLevel = this.sunLevels[x][y];
-    const waterLevel = this.waterLevels[x][y];
         // Check if the sun and water requirements are met for growth
         const sunRequirement = 5; // Example sun requirement
         const waterRequirement = 2; // Example water requirement
@@ -396,85 +400,5 @@ class GameScene extends Phaser.Scene {
             // Restart the scene
             this.scene.restart();
         });
-    }
-    saveGame(slot) {
-        const saveData = {
-            gridState: Array.from(this.gridState), // Convert Uint8Array to normal array
-            playerX: this.player.x,
-            playerY: this.player.y,
-            score: this.score,
-            turn: this.currentTurn,
-            // Serialize placedPlants without the sprite reference
-            placedPlants: this.placedPlants.map(plant => ({
-                x: plant.x,
-                y: plant.y,
-                currentStage: plant.currentStage,
-                spriteSetIndex: plant.spriteSetIndex
-            }))
-        };
-    
-        localStorage.setItem(`saveSlot${slot}`, JSON.stringify(saveData));
-        console.log(`Game saved in slot ${slot}`);
-    }
-    loadGame(slot) {
-        const saveData = JSON.parse(localStorage.getItem(`saveSlot${slot}`));
-    
-        if (!saveData) {
-            console.error(`No save data found in slot ${slot}`);
-            return;
-        }
-    
-        // Restore grid state
-        this.gridState = Uint8Array.from(saveData.gridState);
-    
-        // Restore player position
-        this.player.setPosition(saveData.playerX, saveData.playerY);
-    
-        // Restore score and turn
-        this.score = saveData.score;
-        this.currentTurn = saveData.turn;
-    
-        // Update displayed score and turn
-        this.scoreText.setText(`Score: ${this.score}`);
-        this.turnText.setText(`Turn: ${this.currentTurn}`);
-    
-        // Restore placed plants
-        this.placedPlants = saveData.placedPlants.map(plant => {
-            // Determine the correct sprite set based on the saved growth stage
-            let spriteSet;
-            switch (plant.currentStage) {
-                case this.PlantGrowthStage.Grass:
-                    spriteSet = this.grassSprites;
-                    break;
-                case this.PlantGrowthStage.Shrub:
-                    spriteSet = this.shrubSprites;
-                    break;
-                case this.PlantGrowthStage.Tree:
-                    spriteSet = this.treeSprites;
-                    break;
-                default:
-                    console.error(`Unknown growth stage: ${plant.currentStage}`);
-                    return null;
-            }
-    
-            // Create a new sprite with the correct texture
-            const newPlantSprite = this.add.sprite(
-                plant.x * this.gridSize + this.gridSize / 2,
-                plant.y * this.gridSize + this.gridSize / 2,
-                "tilemap",
-                spriteSet[plant.spriteSetIndex]
-            );
-            newPlantSprite.scale = 4;
-    
-            return {
-                sprite: newPlantSprite,
-                x: plant.x,
-                y: plant.y,
-                currentStage: plant.currentStage,
-                spriteSetIndex: plant.spriteSetIndex
-            };
-        });
-    
-        console.log(`Game loaded from slot ${slot}`);
     }
 }
