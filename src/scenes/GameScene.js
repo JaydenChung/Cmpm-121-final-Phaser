@@ -14,6 +14,12 @@ class GameScene extends Phaser.Scene {
 
     create() {
         this.gridSize = 64;
+        this.gridWidth = 10; // Adjust as needed
+        this.gridHeight = 10; // Adjust as needed
+
+        // Initialize the grid state as a Uint8Array
+        this.gridState = new Uint8Array(this.gridWidth * this.gridHeight);
+
         const backGround = this.add.image(0, 0, "BG").setOrigin(0,0)
 
         // Plant Growth Stages
@@ -82,8 +88,21 @@ class GameScene extends Phaser.Scene {
         this.oKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O); 
         this.oneKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE); 
         this.twoKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO); 
-        this.threeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE); 
+        this.threeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
+        this.input.keyboard.on('keydown-F', () => this.saveGame(1)); // Save to slot 1
+        this.input.keyboard.on('keydown-L', () => this.loadGame(1));
     }
+
+    getGridValue(x, y) {
+        const index = y * this.gridWidth + x;
+        return this.gridState[index];
+    }
+
+    setGridValue(x, y, value) {
+        const index = y * this.gridWidth + x;
+        this.gridState[index] = value;
+    }
+
 
     update() {
         const playerSpeed = this.gridSize;
@@ -377,5 +396,85 @@ class GameScene extends Phaser.Scene {
             // Restart the scene
             this.scene.restart();
         });
+    }
+    saveGame(slot) {
+        const saveData = {
+            gridState: Array.from(this.gridState), // Convert Uint8Array to normal array
+            playerX: this.player.x,
+            playerY: this.player.y,
+            score: this.score,
+            turn: this.currentTurn,
+            // Serialize placedPlants without the sprite reference
+            placedPlants: this.placedPlants.map(plant => ({
+                x: plant.x,
+                y: plant.y,
+                currentStage: plant.currentStage,
+                spriteSetIndex: plant.spriteSetIndex
+            }))
+        };
+    
+        localStorage.setItem(`saveSlot${slot}`, JSON.stringify(saveData));
+        console.log(`Game saved in slot ${slot}`);
+    }
+    loadGame(slot) {
+        const saveData = JSON.parse(localStorage.getItem(`saveSlot${slot}`));
+    
+        if (!saveData) {
+            console.error(`No save data found in slot ${slot}`);
+            return;
+        }
+    
+        // Restore grid state
+        this.gridState = Uint8Array.from(saveData.gridState);
+    
+        // Restore player position
+        this.player.setPosition(saveData.playerX, saveData.playerY);
+    
+        // Restore score and turn
+        this.score = saveData.score;
+        this.currentTurn = saveData.turn;
+    
+        // Update displayed score and turn
+        this.scoreText.setText(`Score: ${this.score}`);
+        this.turnText.setText(`Turn: ${this.currentTurn}`);
+    
+        // Restore placed plants
+        this.placedPlants = saveData.placedPlants.map(plant => {
+            // Determine the correct sprite set based on the saved growth stage
+            let spriteSet;
+            switch (plant.currentStage) {
+                case this.PlantGrowthStage.Grass:
+                    spriteSet = this.grassSprites;
+                    break;
+                case this.PlantGrowthStage.Shrub:
+                    spriteSet = this.shrubSprites;
+                    break;
+                case this.PlantGrowthStage.Tree:
+                    spriteSet = this.treeSprites;
+                    break;
+                default:
+                    console.error(`Unknown growth stage: ${plant.currentStage}`);
+                    return null;
+            }
+    
+            // Create a new sprite with the correct texture
+            const newPlantSprite = this.add.sprite(
+                plant.x * this.gridSize + this.gridSize / 2,
+                plant.y * this.gridSize + this.gridSize / 2,
+                "tilemap",
+                spriteSet[plant.spriteSetIndex]
+            );
+            newPlantSprite.scale = 4;
+    
+            return {
+                sprite: newPlantSprite,
+                x: plant.x,
+                y: plant.y,
+                currentStage: plant.currentStage,
+                spriteSetIndex: plant.spriteSetIndex
+            };
+        });
+    
+        console.log(`Game loaded from slot ${slot}`);
     }
 }
