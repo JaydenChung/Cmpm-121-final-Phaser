@@ -10,28 +10,29 @@
         },
         "events": [
           {
-            "time": "turn_1",
             "type": "spawn_plant",
             "location": [5, 5],
             "plant_type": "grass"
           },
           {
-            "time": "turn_3",
+            "type": "spawn_plant",
+            "location": [6, 5],
+            "plant_type": "shrub"
+          },
+          {
+            "type": "spawn_plant",
+            "location": [7, 5],
+            "plant_type": "tree"
+          },
+
+          {
             "type": "randomize_resources",
-            "intensity": "low"
+            "intensity": "high"
           }
         ],
         "victory_conditions": {
           "grow_trees": 2,
           "turns_limit": 10
-        },
-        "narrative": {
-          "intro": "Welcome to the plant growing tutorial! Learn to manage your plants and resources.",
-          "tips": [
-            "Use WASD to move",
-            "Place plants adjacent to your character",
-            "Manage sun and water to help plants grow"
-          ]
         }
       }
     }

@@ -510,11 +510,35 @@ class GameScene extends Phaser.Scene {
         const plantPixelX = plantX * this.gridSize + this.gridSize / 2;
         const plantPixelY = plantY * this.gridSize + this.gridSize / 2;
     
+        // Determine sprite based on plant type
+        let spriteFrame, spriteSetIndex, currentStage;
+        switch(event.plant_type) {
+            case 'grass':
+                spriteFrame = this.grassSprites[this.plantIndex];
+                spriteSetIndex = this.plantIndex;
+                currentStage = this.PlantGrowthStage.Grass;
+                break;
+            case 'shrub':
+                spriteFrame = this.shrubSprites[this.plantIndex];
+                spriteSetIndex = this.plantIndex;
+                currentStage = this.PlantGrowthStage.Shrub;
+                break;
+            case 'tree':
+                spriteFrame = this.treeSprites[this.plantIndex];
+                spriteSetIndex = this.plantIndex;
+                currentStage = this.PlantGrowthStage.Tree;
+                break;
+            default:
+                spriteFrame = this.grassSprites[this.plantIndex];
+                spriteSetIndex = this.plantIndex;
+                currentStage = this.PlantGrowthStage.Grass;
+        }
+    
         const newPlant = this.add.sprite(
             plantPixelX, 
             plantPixelY, 
             "tilemap", 
-            this.grassSprites[this.plantIndex]
+            spriteFrame
         );
         newPlant.scale = 4;
     
@@ -522,8 +546,8 @@ class GameScene extends Phaser.Scene {
             sprite: newPlant,
             x: plantX,
             y: plantY,
-            currentStage: this.PlantGrowthStage.Grass,
-            spriteSetIndex: this.plantIndex
+            currentStage: currentStage,
+            spriteSetIndex: spriteSetIndex
         });
     }
     
