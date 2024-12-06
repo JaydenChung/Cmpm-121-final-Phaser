@@ -5,6 +5,7 @@ class GameScene extends Phaser.Scene {
         // Stacks for undo and redo functionality
         this.undoStack = [];
         this.redoStack = [];
+        this.scenarioEventTurns = {};
     }
 
     preload(){
@@ -103,6 +104,7 @@ class GameScene extends Phaser.Scene {
 
         this.plantManager = new PlantManager(this.gridSize, this.maxPlantsPerTurn);
         this.saveState('initial');
+        this.loadScenarioFromFile('tutorial');
     }
 
     update() {
@@ -288,6 +290,18 @@ class GameScene extends Phaser.Scene {
         this.currentTurn++;
         this.plantsPlacedThisTurn = 0;
         this.turnText.setText(`Turn: ${this.currentTurn}`);
+        const turnEvent = this.scenarioEventTurns[this.currentTurn];
+        if (turnEvent) {
+            switch(turnEvent.type) {
+                case 'spawn_plant':
+                    this.spawnScenarioPlant(turnEvent);
+                    break;
+                case 'randomize_resources':
+                    this.applyResourceRandomization(turnEvent);
+                    break;
+                // Add other event type handlers as needed
+            }
+        }
         
         // Attempt to grow each placed plants
         this.plantManager.getPlaced().forEach((plantObj) => {
@@ -342,6 +356,259 @@ class GameScene extends Phaser.Scene {
             // Restart the scene
             this.scene.restart();
         });
+    }
+
+    async loadScenarioFromFile(scenarioName) {
+        try {
+            const response = await fetch(`src/scenarios/${scenarioName}.json`);
+            const scenarioData = await response.json();
+            
+            // Check if scenario exists
+            if (!scenarioData.scenarios || !scenarioData.scenarios[scenarioName]) {
+                console.error(`Scenario ${scenarioName} not found`);
+                return;
+            }
+            
+            // Pass specific scenario to apply method
+            this.applyScenario(scenarioData.scenarios[scenarioName]);
+        } catch (error) {
+            console.error('Failed to load scenario:', error);
+        }
+    }
+    
+    // Method to apply a loaded scenario
+    applyScenario(scenarioData) {
+        // Reset game state
+        this.resetGameState();
+    
+        // Apply initial conditions
+        const initialConditions = scenarioData.initial_conditions;
+        
+        // Set player position
+        if (initialConditions.player_start_position) {
+            this.player.x = initialConditions.player_start_position[0] * this.gridSize + this.gridSize / 2;
+            this.player.y = initialConditions.player_start_position[1] * this.gridSize + this.gridSize / 2;
+        }
+    
+        // Set starting resources
+        if (initialConditions.starting_resources) {
+            this.sun = initialConditions.starting_resources.sun || 0;
+            this.water = initialConditions.starting_resources.water || 0;
+            
+            this.sunText.setText(`Sun: ${this.sun}`);
+            this.waterText.setText(`Water: ${this.water}`);
+        }
+    
+        // Place initial plants
+        if (initialConditions.starting_plants) {
+            initialConditions.starting_plants.forEach(plant => {
+                const plantX = plant.location[0];
+                const plantY = plant.location[1];
+                const plantPixelX = plantX * this.gridSize + this.gridSize / 2;
+                const plantPixelY = plantY * this.gridSize + this.gridSize / 2;
+    
+                // Select appropriate sprite set based on growth stage
+                let spriteSet;
+                switch(plant.growth_stage) {
+                    case this.PlantGrowthStage.Tree:
+                        spriteSet = this.treeSprites;
+                        break;
+                    case this.PlantGrowthStage.Shrub:
+                        spriteSet = this.shrubSprites;
+                        break;
+                    default:
+                        spriteSet = this.grassSprites;
+                }
+    
+                const spriteIndex = plant.sprite_variation !== undefined 
+                    ? Math.min(2, Math.max(0, plant.sprite_variation))
+                    : 0;
+                
+                const spriteFrame = spriteSet[spriteIndex];
+    
+                const newPlant = this.add.sprite(
+                    plantPixelX, 
+                    plantPixelY, 
+                    "tilemap", 
+                    spriteFrame
+                );
+                newPlant.scale = 4;
+    
+                this.placedPlants.push({
+                    sprite: newPlant,
+                    x: plantX,
+                    y: plantY,
+                    currentStage: plant.growth_stage,
+                    spriteSetIndex: spriteIndex
+                });
+            });
+        }
+    
+        // Schedule scenario events
+        if (scenarioData.events) {
+            this.scenarioEvents = scenarioData.events;
+            this.processScenarioEvents();
+        }
+    
+        // Set victory conditions
+        this.victoryConditions = scenarioData.victory_conditions || {};
+    }
+    
+    // Method to process scenario events
+    processScenarioEvents() {
+        if (!this.scenarioEvents) return;
+    
+        this.scenarioEvents.forEach((event, index) => {
+            // If event has a specific turn, store it
+            if (event.turn) {
+                this.scenarioEventTurns[event.turn] = event;
+            }
+        });
+    }
+    
+    
+    // Helper methods for scenario events
+    spawnScenarioPlant(event) {
+        if (!event.location) return;
+    
+        const plantX = event.location[0];
+        const plantY = event.location[1];
+        const plantPixelX = plantX * this.gridSize + this.gridSize / 2;
+        const plantPixelY = plantY * this.gridSize + this.gridSize / 2;
+    
+        // Get growth stage from event, default to Grass if not specified
+        const growthStage = event.growth_stage !== undefined 
+            ? event.growth_stage 
+            : this.PlantGrowthStage.Grass;
+    
+        // Select appropriate sprite set based on growth stage
+        let spriteSet;
+        switch(growthStage) {
+            case this.PlantGrowthStage.Tree:
+                spriteSet = this.treeSprites;
+                break;
+            case this.PlantGrowthStage.Shrub:
+                spriteSet = this.shrubSprites;
+                break;
+            default:
+                spriteSet = this.grassSprites;
+        }
+    
+        // Use the specified sprite variation or default to the first one
+        const spriteIndex = event.sprite_variation !== undefined 
+            ? Math.min(2, Math.max(0, event.sprite_variation))
+            : 0;
+        
+        const spriteFrame = spriteSet[spriteIndex];
+    
+        const newPlant = this.add.sprite(
+            plantPixelX, 
+            plantPixelY, 
+            "tilemap", 
+            spriteFrame
+        );
+        newPlant.scale = 4;
+    
+        this.placedPlants.push({
+            sprite: newPlant,
+            x: plantX,
+            y: plantY,
+            currentStage: growthStage,
+            spriteSetIndex: spriteIndex
+        });
+    }
+    
+    applyResourceRandomization(event) {
+        const intensityMap = {
+            'low': { sunRange: [0, 5], waterRange: [0, 3] },
+            'medium': { sunRange: [3, 8], waterRange: [2, 5] },
+            'high': { sunRange: [5, 10], waterRange: [4, 7] }
+        };
+    
+        const intensity = event.intensity || 'medium';
+        const { sunRange, waterRange } = intensityMap[intensity];
+    
+        const gridCols = Math.ceil(this.sys.game.config.width / this.gridSize);
+        const gridRows = Math.ceil(this.sys.game.config.height / this.gridSize);
+    
+        for (let i = 0; i < gridCols; i++) {
+            for (let j = 0; j < gridRows; j++) {
+                this.sunLevels[i][j] = Phaser.Math.Between(sunRange[0], sunRange[1]);
+                this.waterLevels[i][j] = Phaser.Math.Between(waterRange[0], waterRange[1]);
+            }
+        }
+    }
+    
+    applyWeatherEffect(event) {
+        switch(event.effect) {
+            case 'drought':
+                // Reduce water levels across the grid
+                this.waterLevels = this.waterLevels.map(row => 
+                    row.map(water => Math.max(0, water - 2))
+                );
+                break;
+            case 'rain':
+                // Increase water levels across the grid
+                this.waterLevels = this.waterLevels.map(row => 
+                    row.map(water => Math.min(10, water + 2))
+                );
+                break;
+        }
+    }
+    
+    spawnObstacle(event) {
+        // Placeholder for obstacle spawning logic
+        console.log('Spawning obstacle:', event.type);
+    }
+    
+    // Method to check victory conditions at the end of each turn
+    checkVictoryConditions() {
+        // Check tree growth condition
+        if (this.victoryConditions.grow_trees) {
+            const treesGrown = this.placedPlants.filter(
+                p => p.currentStage === this.PlantGrowthStage.Tree
+            ).length;
+            
+            if (treesGrown >= this.victoryConditions.grow_trees) {
+                this.gameWin();
+            }
+        }
+    
+        // Check turns limit
+        if (this.victoryConditions.turns_limit && 
+            this.currentTurn > this.victoryConditions.turns_limit) {
+            this.gameLose();
+        }
+    
+        // Add more victory condition checks as needed
+    }
+    
+    // Placeholder methods for win/lose game states
+    gameWin() {
+        console.log('Scenario completed successfully!');
+        // Add win screen or transition logic
+    }
+    
+    gameLose() {
+        console.log('Scenario failed!');
+        // Add lose screen or retry logic
+    }
+    
+    // Reset game state method
+    resetGameState() {
+        // Clear existing plants
+        this.placedPlants.forEach(plant => plant.sprite.destroy());
+        this.placedPlants = [];
+    
+        // Reset turn and resources
+        this.currentTurn = 1;
+        this.plantsPlacedThisTurn = 0;
+        this.turnText.setText('Turn: 1');
+    
+        // Reset resources
+        this.sun = 0;
+        this.water = 0;
+        this.resetResources();
     }
 
 }

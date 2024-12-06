@@ -1,0 +1,77 @@
+{
+  "scenarios": {
+    "tutorial": {
+      "initial_conditions": {
+        "player_start_position": [4, 4],
+        "starting_resources": {
+          "sun": 10,
+          "water": 5
+        },
+        "starting_plants": [
+          {
+            "location": [5, 5],
+            "growth_stage": 0,
+            "sprite_variation": 0
+          },
+          {
+            "location": [6, 5],
+            "growth_stage": 1,
+            "sprite_variation": 0
+          },
+          {
+            "location": [7, 5],
+            "growth_stage": 2,
+            "sprite_variation": 0
+          },
+          {
+            "location": [5, 6],
+            "growth_stage": 0,
+            "sprite_variation": 1
+          },
+          {
+            "location": [6, 6],
+            "growth_stage": 1,
+            "sprite_variation": 1
+          },
+          {
+            "location": [7, 6],
+            "growth_stage": 2,
+            "sprite_variation": 1
+          }
+        ]
+      },
+      "events": [
+        {
+          "turn": 2,
+          "type": "spawn_plant",
+          "location": [5, 4],
+          "growth_stage": 0,
+          "sprite_variation": 2
+        },
+        {
+          "turn": 3,
+          "type": "spawn_plant",
+          "location": [6, 4],
+          "growth_stage": 1,
+          "sprite_variation": 2
+        },
+        {
+          "turn": 4,
+          "type": "spawn_plant",
+          "location": [7, 4],
+          "growth_stage": 2,
+          "sprite_variation": 2
+        },
+        {
+          "turn": 5,
+          "type": "randomize_resources",
+          "intensity": "high"
+        }
+      ],
+      "victory_conditions": {
+        "grow_trees": 2,
+        "turns_limit": 10
+      }
+    }
+  }
+}
