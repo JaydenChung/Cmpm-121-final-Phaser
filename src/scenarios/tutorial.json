@@ -1,0 +1,38 @@
+{
+    "scenarios": {
+      "tutorial": {
+        "initial_conditions": {
+          "player_start_position": [4, 5],
+          "starting_resources": {
+            "sun": 10,
+            "water": 5
+          }
+        },
+        "events": [
+          {
+            "time": "turn_1",
+            "type": "spawn_plant",
+            "location": [5, 5],
+            "plant_type": "grass"
+          },
+          {
+            "time": "turn_3",
+            "type": "randomize_resources",
+            "intensity": "low"
+          }
+        ],
+        "victory_conditions": {
+          "grow_trees": 2,
+          "turns_limit": 10
+        },
+        "narrative": {
+          "intro": "Welcome to the plant growing tutorial! Learn to manage your plants and resources.",
+          "tips": [
+            "Use WASD to move",
+            "Place plants adjacent to your character",
+            "Manage sun and water to help plants grow"
+          ]
+        }
+      }
+    }
+  }
