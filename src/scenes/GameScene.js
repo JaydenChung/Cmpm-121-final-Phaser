@@ -300,16 +300,17 @@ class GameScene extends Phaser.Scene {
                 case 'randomize_resources':
                     this.applyResourceRandomization(turnEvent);
                     break;
-                // Add other event type handlers as needed
             }
         }
         
-        // Attempt to grow each placed plants
-        this.plantManager.getPlaced().forEach((plantObj) => {
-            this.plantManager.growPlant(plantObj, this);
+        // Grow plants from both placedPlants and plantManager
+        [...this.placedPlants, ...this.plantManager.getPlaced()].forEach((plantObj) => {
+            // Ensure each plant has a sprite and current stage
+            if (plantObj.sprite && plantObj.currentStage !== undefined) {
+                this.plantManager.growPlant(plantObj, this);
+            }
         });
-        
-
+    
         this.resetResources();
     }
 
