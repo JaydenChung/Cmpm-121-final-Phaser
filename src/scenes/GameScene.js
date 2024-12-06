@@ -6,6 +6,7 @@ class GameScene extends Phaser.Scene {
         this.undoStack = [];
         this.redoStack = [];
         this.scenarioEventTurns = {};
+        
     }
 
     preload(){
@@ -378,71 +379,78 @@ class GameScene extends Phaser.Scene {
     
     // Method to apply a loaded scenario
     applyScenario(scenarioData) {
-        // Reset game state
-        this.resetGameState();
+
+    // Reset game state
+    this.resetGameState();
+
+    // Apply initial conditions
+    const initialConditions = scenarioData.initial_conditions;
     
-        // Apply initial conditions
-        const initialConditions = scenarioData.initial_conditions;
+    // Set player position
+    if (initialConditions.player_start_position) {
+        this.player.x = initialConditions.player_start_position[0] * this.gridSize + this.gridSize / 2;
+        this.player.y = initialConditions.player_start_position[1] * this.gridSize + this.gridSize / 2;
+    }
+
+    // Set starting resources
+    if (initialConditions.starting_resources) {
+        this.sun = initialConditions.starting_resources.sun || 0;
+        this.water = initialConditions.starting_resources.water || 0;
         
-        // Set player position
-        if (initialConditions.player_start_position) {
-            this.player.x = initialConditions.player_start_position[0] * this.gridSize + this.gridSize / 2;
-            this.player.y = initialConditions.player_start_position[1] * this.gridSize + this.gridSize / 2;
-        }
-    
-        // Set starting resources
-        if (initialConditions.starting_resources) {
-            this.sun = initialConditions.starting_resources.sun || 0;
-            this.water = initialConditions.starting_resources.water || 0;
+        this.sunText.setText(`Sun: ${this.sun}`);
+        this.waterText.setText(`Water: ${this.water}`);
+    }
+
+    // Place initial plants
+    if (initialConditions.starting_plants) {
+        initialConditions.starting_plants.forEach(plant => {
+            console.log('Processing plant:', plant);
+
+            const plantX = plant.location[0];
+            const plantY = plant.location[1];
+            const plantPixelX = plantX * this.gridSize + this.gridSize / 2;
+            const plantPixelY = plantY * this.gridSize + this.gridSize / 2;
+
+            // Add more detailed logging and error checking
+            console.log('Growth Stage:', plant.growth_stage);
+            console.log('Sprite Variation:', plant.sprite_variation);
+
+            // Directly use numeric values instead of referencing PlantGrowthStage
+            let spriteSet;
+            switch(plant.growth_stage) {
+                case 2: // Tree stage
+                    spriteSet = this.plantManager.treeSprites;
+                    break;
+                case 1: // Shrub stage
+                    spriteSet = this.plantManager.shrubSprites;
+                    break;
+                default: // Grass stage
+                    spriteSet = this.plantManager.grassSprites;
+            }
+
+            const spriteIndex = plant.sprite_variation !== undefined 
+                ? Math.min(2, Math.max(0, plant.sprite_variation))
+                : 0;
             
-            this.sunText.setText(`Sun: ${this.sun}`);
-            this.waterText.setText(`Water: ${this.water}`);
-        }
-    
-        // Place initial plants
-        if (initialConditions.starting_plants) {
-            initialConditions.starting_plants.forEach(plant => {
-                const plantX = plant.location[0];
-                const plantY = plant.location[1];
-                const plantPixelX = plantX * this.gridSize + this.gridSize / 2;
-                const plantPixelY = plantY * this.gridSize + this.gridSize / 2;
-    
-                // Select appropriate sprite set based on growth stage
-                let spriteSet;
-                switch(plant.growth_stage) {
-                    case this.PlantGrowthStage.Tree:
-                        spriteSet = this.treeSprites;
-                        break;
-                    case this.PlantGrowthStage.Shrub:
-                        spriteSet = this.shrubSprites;
-                        break;
-                    default:
-                        spriteSet = this.grassSprites;
-                }
-    
-                const spriteIndex = plant.sprite_variation !== undefined 
-                    ? Math.min(2, Math.max(0, plant.sprite_variation))
-                    : 0;
-                
-                const spriteFrame = spriteSet[spriteIndex];
-    
-                const newPlant = this.add.sprite(
-                    plantPixelX, 
-                    plantPixelY, 
-                    "tilemap", 
-                    spriteFrame
-                );
-                newPlant.scale = 4;
-    
-                this.placedPlants.push({
-                    sprite: newPlant,
-                    x: plantX,
-                    y: plantY,
-                    currentStage: plant.growth_stage,
-                    spriteSetIndex: spriteIndex
-                });
+            const spriteFrame = spriteSet[spriteIndex];
+
+            const newPlant = this.add.sprite(
+                plantPixelX, 
+                plantPixelY, 
+                "tilemap", 
+                spriteFrame
+            );
+            newPlant.scale = 4;
+
+            this.placedPlants.push({
+                sprite: newPlant,
+                x: plantX,
+                y: plantY,
+                currentStage: plant.growth_stage,
+                spriteSetIndex: spriteIndex
             });
-        }
+        });
+    }
     
         // Schedule scenario events
         if (scenarioData.events) {
@@ -483,16 +491,16 @@ class GameScene extends Phaser.Scene {
     
         // Select appropriate sprite set based on growth stage
         let spriteSet;
-        switch(growthStage) {
-            case this.PlantGrowthStage.Tree:
-                spriteSet = this.treeSprites;
-                break;
-            case this.PlantGrowthStage.Shrub:
-                spriteSet = this.shrubSprites;
-                break;
-            default:
-                spriteSet = this.grassSprites;
-        }
+            switch(growthStage) {
+                case 2: // Tree stage
+                    spriteSet = this.plantManager.treeSprites;
+                    break;
+                case 1: // Shrub stage
+                    spriteSet = this.plantManager.shrubSprites;
+                    break;
+                default: // Grass stage
+                    spriteSet = this.plantManager.grassSprites;
+            }
     
         // Use the specified sprite variation or default to the first one
         const spriteIndex = event.sprite_variation !== undefined 
