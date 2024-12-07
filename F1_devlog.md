@@ -31,7 +31,11 @@
 1. **F1.a: Data Packing and Memory Strategy**  
    - **Implementation:** The grid-based system for managing environmental resources like sunlight and water levels is implemented using SoA, with separate 2D arrays (sunLevels and waterLevels) for each resource type. This enables efficient bulk updates and independent manipulation of each resource. Conversely, the placedPlants array employs an AoS structure, where each entry is a structured object containing fields such as grid coordinates (x, y), growth stage, and sprite information.
 
-![image](https://github.com/user-attachments/assets/0eb3ac8e-a9e6-4e81-a664-090791b92745)
+
+![image](https://github.com/user-attachments/assets/4a9e4202-1da6-4632-a9b3-63bb53e1ed03)
+![image](https://github.com/user-attachments/assets/c0c08202-488c-4e20-82f4-7735ab25a363)
+
+
 
 
 2. **F1.b: Implicit Auto-Save System**  
