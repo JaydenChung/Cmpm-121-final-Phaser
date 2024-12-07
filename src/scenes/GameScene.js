@@ -91,11 +91,6 @@ class GameScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-F', () => this.gridState.saveGame(this.returnGameState(), this)); 
         this.input.keyboard.on('keydown-L', () => this.gridState.loadGame(this)); 
 
-        this.time.addEvent({ 
-            delay: 60000, // 60 seconds
-            callback: () => this.saveGameToStorage(),
-            loop: true
-        });
 
         this.time.addEvent({ 
             delay: 60000, // 60 seconds
@@ -105,7 +100,7 @@ class GameScene extends Phaser.Scene {
 
         this.plantManager = new PlantManager(this.gridSize, this.maxPlantsPerTurn);
         this.saveState('initial');
-        this.loadScenarioFromFile('tutorial');
+        //this.loadScenarioFromFile('tutorial');
     }
 
     update() {
@@ -310,6 +305,8 @@ class GameScene extends Phaser.Scene {
                 this.plantManager.growPlant(plantObj, this);
             }
         });
+
+        this.plantManager.plantsPlacedThisTurn = 0;
     
         this.resetResources();
     }
