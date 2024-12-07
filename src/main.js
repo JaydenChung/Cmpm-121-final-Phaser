@@ -3,11 +3,12 @@
 "use strict"
 
 let config = {
+    parent: 'phaser-game',
     type: Phaser.AUTO,
     render:{
         pixelArt: true
     },
-    scene: [PreloadScene, GameScene],
+    scene: [StartScene, PreloadScene, GameScene],
     width: 1000,
     height: 900,
 }

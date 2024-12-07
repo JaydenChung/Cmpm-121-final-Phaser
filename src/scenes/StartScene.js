@@ -9,10 +9,12 @@ class StartScene extends Phaser.Scene {
     }
 
     create() {
+        document.getElementById('description').innerHTML = '<h1>Graceful Garden<br>[O] Next Turn<br>[Z] Undo<br>[X] Redo<br>[F] Save Game<br>[L] Load Game'
         // Add background image
         const bg = this.add.image(0, 0, 'mapBG').setOrigin(0, 0);
         bg.displayWidth = this.sys.game.config.width;
         bg.displayHeight = this.sys.game.config.height;
+        console.log("On Tutorial");
 
         // Add title text
         this.add.text(
