@@ -29,8 +29,9 @@
 ### New F1 Requirements (4 Total)  
 
 1. **F1.a: Data Packing and Memory Strategy**  
-   - **Implementation:** The grid-based system for managing environmental resources like sunlight and water levels is implemented using SoA, with separate 2D arrays (sunLevels and waterLevels) for each resource type. This enables efficient bulk updates and independent manipulation of each resource. Conversely, the placedPlants array employs an AoS structure, where each entry is a structured object containing fields such as grid coordinates (x, y), growth stage, and sprite information. 
-   
+   - **Implementation:** The grid-based system for managing environmental resources like sunlight and water levels is implemented using SoA, with separate 2D arrays (sunLevels and waterLevels) for each resource type. This enables efficient bulk updates and independent manipulation of each resource. Conversely, the placedPlants array employs an AoS structure, where each entry is a structured object containing fields such as grid coordinates (x, y), growth stage, and sprite information.
+
+   ![Data Packing and Memory Diagram](./assets/Diagrams.png)
 
 2. **F1.b: Implicit Auto-Save System**  
    - **Implementation:** The game saves automatically every 60 seconds. This ensures the game state is preserved without explicit user input. The saveGameToStorage() method serializes critical game data, including the player's position, current turn, placed plants, and resource levels, and stores it in the browser's localStorage. This method is invoked automatically every 60 seconds using a timed event (Phaser.Time.addEvent) to ensure progress is consistently recorded. Additionally, significant player actions, such as movement or placing a plant, trigger state snapshots via the saveState() method, which updates an undo stack and prepares the game state for auto-saving. This dual approach ensures the system captures both regular intervals and important gameplay moments, providing robust data preservation without requiring explicit player input.
