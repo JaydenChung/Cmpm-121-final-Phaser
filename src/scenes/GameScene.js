@@ -9,6 +9,11 @@ class GameScene extends Phaser.Scene {
         
     }
 
+
+    init(data) {
+        this.language = data.language;  // Access the passed 'language' data here
+    }
+
     preload(){
         this.load.spritesheet("tilemap", "assets/GRASS+.png", {
             frameWidth: 16,
@@ -17,7 +22,46 @@ class GameScene extends Phaser.Scene {
         this.load.image("BG", "assets/mapBG.png")
     }
 
+
+
     create() {
+        console.log(this.language + " successfully passed in gamescene.js");
+        
+        this.localization = [
+            {
+                language: "English",
+                translations: {
+                    "movedup": "Moved up",
+                    "moveddown": "Moved down",
+                    "movedleft": "Moved left",
+                    "movedright": "Moved right"
+                }
+            },
+            {
+                language: "Chinese",
+                translations: {
+                    "movedup": "向上移动",
+                    "moveddown": "向下移动",
+                    "movedleft": "向左移动",
+                    "movedright": "向右移动"
+                }
+            },
+            {
+                language: "Arabic",
+                translations: {
+                    "movedup": "تحرك للأعلى",
+                    "moveddown": "تحرك للأسفل",
+                    "movedleft": "تحرك لليسار",
+                    "movedright": "تحرك لليمين"
+                }
+            }
+        ];
+
+        this.Translations = this.localization.find(lang => lang.language === this.language).translations;
+
+        
+
+
         this.gridSize = 64;
         const backGround = this.add.image(0, 0, "BG").setOrigin(0,0)
 
@@ -92,11 +136,11 @@ class GameScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-L', () => this.gridState.loadGame(this)); 
 
 
-        this.time.addEvent({ 
+        /**this.time.addEvent({ 
             delay: 60000, // 60 seconds
             callback: () => this.gridState.saveGame(1, this.returnGameState()),
             loop: true
-        });
+        });**/
 
         this.plantManager = new PlantManager(this.gridSize, this.maxPlantsPerTurn);
         this.saveState('initial');
@@ -107,6 +151,16 @@ class GameScene extends Phaser.Scene {
         this.previewSprite.scale = 4
         this.previewSprite.alpha = 0.5;
         this.previewSprite.setVisible(false);
+
+        this.fadingText = this.add.text(
+            this.sys.game.config.width / 2,   // Horizontal center
+            this.sys.game.config.height / 2,  // Vertical center
+            '', {
+                font: '32px Arial',
+                fill: '#ffffff'
+            }
+        ).setOrigin(0.5, 0.5)  // Center the text's origin point
+         .setAlpha(0);         // Start invisible
     }
 
     update() {
@@ -114,15 +168,22 @@ class GameScene extends Phaser.Scene {
         let newX = this.player.x;
         let newY = this.player.y;
 
-        // Determine potential new position
         if (Phaser.Input.Keyboard.JustDown(this.wKey)) {
             newY -= playerSpeed;
+            this.saveState();
+            this.updateFadingText(this.Translations.movedup); // Use the localized text
         } else if (Phaser.Input.Keyboard.JustDown(this.sKey)) {
             newY += playerSpeed;
+            this.saveState();
+            this.updateFadingText(this.Translations.moveddown); // Use the localized text
         } else if (Phaser.Input.Keyboard.JustDown(this.aKey)) {
             newX -= playerSpeed;
+            this.saveState();
+            this.updateFadingText(this.Translations.movedleft); // Use the localized text
         } else if (Phaser.Input.Keyboard.JustDown(this.dKey)) {
             newX += playerSpeed;
+            this.saveState();
+            this.updateFadingText(this.Translations.movedright); // Use the localized text
         } else if (Phaser.Input.Keyboard.JustDown(this.oKey)) {
             this.nextTurn();
             return;
@@ -181,10 +242,14 @@ class GameScene extends Phaser.Scene {
             plant.currentStage === this.plantManager.PlantGrowthStage.Tree
         );
         if (plantToReap) {
+            this.saveState();
             this.plantManager.reapPlant(plantToReap, this);
+            
         } else {
             // If not reaping, try to place a plant
+            this.saveState();
             this.plantManager.placePlant(pointer, this.plantIndex, this);
+            
         }
     }
 
@@ -629,4 +694,28 @@ class GameScene extends Phaser.Scene {
         this.plantIndex = index;
         this.previewSprite.setTexture("tilemap", this.plantManager.grassSprites[this.plantIndex])
     }
+
+    updateFadingText(message) {
+        // Update text content and fade it in/out
+        this.fadingText.setText(message);
+        this.fadingText.setStyle({ fill: '#00ffff' });
+        this.tweens.add({
+            targets: this.fadingText,
+            alpha: 1, // Fade in
+            duration: 500,
+            ease: 'Linear',
+            onComplete: () => {
+                this.time.delayedCall(1000, () => {
+                    this.tweens.add({
+                        targets: this.fadingText,
+                        alpha: 0, // Fade out
+                        duration: 500,
+                        ease: 'Linear'
+                    });
+                });
+            }
+        });
+    }
 }
+
+

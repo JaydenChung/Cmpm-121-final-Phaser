@@ -79,6 +79,8 @@ class gridStateManager{
 
             localStorage.setItem('saveGame', JSON.stringify(saveData));
             console.log('Game state (including undo/redo) saved to storage!');
+            game.updateFadingText('Game state (including undo/redo) \nsaved to storage!');
+            
             
         } else {
             console.log('No game state to save.');

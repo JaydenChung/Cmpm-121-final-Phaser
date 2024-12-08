@@ -40,6 +40,8 @@ class PlantManager{
     placePlant(pointer, plantIndex, game) {
         if (this.plantsPlacedThisTurn >= this.maxPlantsPerTurn) {
             console.log("Maximum of 3 plants can be placed per turn.");
+            game.updateFadingText('Maximum of 3 plants \ncan be placed per turn.');
+            console.log(game.language);
             return;
         }
         
@@ -83,8 +85,10 @@ class PlantManager{
             this.plantsPlacedThisTurn++;
         } else if (isOccupied) {
             console.log("Cannot place a plant on an already occupied grid cell.");
+            game.updateFadingText("Cannot place a plant on an\n already occupied grid cell.");
         } else {
             console.log("You can only place plants adjacent to the player.");
+            game.updateFadingText("You can only place plants\n adjacent to the player.");
         }
     }
 
@@ -107,10 +111,13 @@ class PlantManager{
                 game.showWinScreen();
             } else if (this.sowedPlants === game.maxSowedPlants) {
                 console.log(`Game is finished, total plants sowed: ${game.sowedPlants}`);
+                game.updateFadingText(`Game is finished, \ntotal plants sowed: ${game.sowedPlants}`);
+                
                 // Previous end game logic remains
             }
         } else {
             console.log("You can only sow final stage plants (trees).");
+            game.updateFadingText("You can only sow \nfinal stage plants (trees).");
         }
     }
 
@@ -164,6 +171,8 @@ class PlantManager{
     resetPlacedTurn(){
         this.plantsPlacedThisTurn = 0;
     }
+
+    
 
 
 }

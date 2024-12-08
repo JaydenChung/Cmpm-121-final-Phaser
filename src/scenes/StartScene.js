@@ -4,7 +4,6 @@ class StartScene extends Phaser.Scene {
     }
 
     preload() {
-        // Load the same background used in GameScene
         this.load.image('mapBG', 'assets/mapBG.png');
     }
 
@@ -17,11 +16,11 @@ class StartScene extends Phaser.Scene {
         [O] Next Turn
         [Z] Undo        [X] Redo
         [F] Save Game   [L] Load Game`;
+
         // Add background image
         const bg = this.add.image(0, 0, 'mapBG').setOrigin(0, 0);
         bg.displayWidth = this.sys.game.config.width;
         bg.displayHeight = this.sys.game.config.height;
-        console.log("On Tutorial");
 
         // Add title text
         this.add.text(
@@ -31,7 +30,34 @@ class StartScene extends Phaser.Scene {
             { fontSize: '48px', color: '#ffffff', fontFamily: 'Arial' }
         ).setOrigin(0.5);
 
-        // Add start button
+        // Language selection buttons
+        const languages = ['English', 'Chinese', 'Arabic'];
+        let selectedLanguage = 'English'; // Default
+
+        languages.forEach((language, index) => {
+            const button = this.add.text(
+                this.sys.game.config.width / 2,
+                200 + index * 50,
+                language,
+                { fontSize: '32px', color: '#ffffff', backgroundColor: '#0000ff', padding: { x: 20, y: 10 } }
+            ).setOrigin(0.5).setInteractive();
+
+            // Button hover effects
+            button.on('pointerover', () => {
+                button.setStyle({ backgroundColor: '#00ff00' });
+            });
+            button.on('pointerout', () => {
+                button.setStyle({ backgroundColor: '#0000ff' });
+            });
+
+            // Button click
+            button.on('pointerdown', () => {
+                selectedLanguage = language;
+                console.log(`Language selected: ${selectedLanguage}`);
+            });
+        });
+
+        // Start Game button
         const startButton = this.add.text(
             this.sys.game.config.width / 2,
             500,
@@ -39,7 +65,6 @@ class StartScene extends Phaser.Scene {
             { fontSize: '32px', color: '#ffffff', backgroundColor: '#0000ff', padding: { x: 20, y: 10 } }
         ).setOrigin(0.5).setInteractive();
 
-        // Button hover effects
         startButton.on('pointerover', () => {
             startButton.setStyle({ backgroundColor: '#00ff00' });
         });
@@ -47,12 +72,13 @@ class StartScene extends Phaser.Scene {
             startButton.setStyle({ backgroundColor: '#0000ff' });
         });
 
-        // Button click transitions to PreloadScene
+        // Start game and pass language to GameScene
         startButton.on('pointerdown', () => {
-            this.scene.start('PreloadScene');
+            console.log(selectedLanguage);
+            this.scene.start('PreloadScene', { language: selectedLanguage });  // Use selectedLanguage here
         });
     }
 }
 
-// Expose StartScene globally so main.js can access it
+// Expose StartScene globally
 window.StartScene = StartScene;
