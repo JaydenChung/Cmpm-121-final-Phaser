@@ -86,6 +86,73 @@ class GameScene extends Phaser.Scene {
                 else if (deltaX > 0) this.updateFadingText(this.Translations.movedright);
             }
         };
+
+        const plantAction = () => {
+            const playerGridX = Math.floor(this.player.x / this.gridSize);
+            const playerGridY = Math.floor(this.player.y / this.gridSize);
+            
+            // Check all adjacent cells (up, right, down, left)
+            const adjacentCells = [
+                {x: playerGridX, y: playerGridY - 1}, // up
+                {x: playerGridX + 1, y: playerGridY}, // right
+                {x: playerGridX, y: playerGridY + 1}, // down
+                {x: playerGridX - 1, y: playerGridY}  // left
+            ];
+
+            // Find the first empty adjacent cell
+            const emptyCell = adjacentCells.find(cell => {
+                return !this.plantManager.getPlaced().some(plant => 
+                    plant.x === cell.x && plant.y === cell.y
+                );
+            });
+
+            if (emptyCell) {
+                this.saveState();
+                // Convert grid coordinates to pixel coordinates for plant placement
+                const pixelX = emptyCell.x * this.gridSize + this.gridSize / 2;
+                const pixelY = emptyCell.y * this.gridSize + this.gridSize / 2;
+                
+                // Create a mock pointer event for the plant manager
+                const mockPointer = {
+                    x: pixelX,
+                    y: pixelY
+                };
+                
+                this.plantManager.placePlant(mockPointer, this.plantIndex, this);
+            }
+        };
+
+        const interactAction = () => {
+            const playerGridX = Math.floor(this.player.x / this.gridSize);
+            const playerGridY = Math.floor(this.player.y / this.gridSize);
+            
+            // Check all adjacent cells
+            const adjacentCells = [
+                {x: playerGridX, y: playerGridY - 1}, // up
+                {x: playerGridX + 1, y: playerGridY}, // right
+                {x: playerGridX, y: playerGridY + 1}, // down
+                {x: playerGridX - 1, y: playerGridY}  // left
+            ];
+
+            let harvestedAny = false;
+
+            // Find and harvest all fully grown plants in adjacent cells
+            adjacentCells.forEach(cell => {
+                const plantToReap = this.plantManager.getPlaced().find(plant => 
+                    plant.x === cell.x && 
+                    plant.y === cell.y && 
+                    plant.currentStage === this.plantManager.PlantGrowthStage.Tree
+                );
+
+                if (plantToReap) {
+                    if (!harvestedAny) {
+                        this.saveState();
+                        harvestedAny = true;
+                    }
+                    this.plantManager.reapPlant(plantToReap, this);
+                }
+            });
+        };
         
 
 
