@@ -189,43 +189,47 @@ class GameScene extends Phaser.Scene {
         ).setOrigin(0.5, 0.5)  // Center the text's origin point
          .setAlpha(0);         // Start invisible
 
-         //mobile controls
-         // Initialize button elements for mobile controls
-        const upButton = document.getElementById('up');
-        const downButton = document.getElementById('down');
-        const leftButton = document.getElementById('left');
-        const rightButton = document.getElementById('right');
-        const plantButton = document.getElementById('plant');
-        const interactButton = document.getElementById('interact');
-        const undoButton = document.getElementById('undo');
-        const redoButton = document.getElementById('redo');
-        const saveButton = document.getElementById('save');
-        const loadButton = document.getElementById('load');
-        const selectOneButton = document.getElementById('selectOne');
-        const selectTwoButton = document.getElementById('selectTwo');
-        const selectThreeButton = document.getElementById('selectThree');
-        const nextTurnButton = document.getElementById('nextTurn');
-
-        // Event Listeners for Movement
-        upButton.addEventListener('click', () => moveCharacter(0, -1));
-        downButton.addEventListener('click', () => moveCharacter(0, 1));
-        leftButton.addEventListener('click', () => moveCharacter(-1, 0));
-        rightButton.addEventListener('click', () => moveCharacter(1, 0));
-
-        // Event Listeners for Actions
-        plantButton.addEventListener('click', () => plantAction());
-        interactButton.addEventListener('click', () => interactAction());
-
-        // Event Listeners for Additional Controls
-        undoButton.addEventListener('click', () => this.undo());
-        redoButton.addEventListener('click', () => this.redo());
-        saveButton.addEventListener('click', () => this.gridState.saveGame(this.returnGameState(), this)); 
-        loadButton.addEventListener('click', () => this.gridState.loadGame(this)); 
-
-        selectOneButton.addEventListener('click', () => updateIndex(0));
-        selectTwoButton.addEventListener('click', () => updateIndex(1));
-        selectThreeButton.addEventListener('click', () => updateIndex(2));
-        nextTurnButton.addEventListener('click', () => this.nextTurn());
+         const upButton = document.getElementById('up');
+         const downButton = document.getElementById('down');
+         const leftButton = document.getElementById('left');
+         const rightButton = document.getElementById('right');
+         const plantButton = document.getElementById('plant');
+         const interactButton = document.getElementById('interact');
+         const undoButton = document.getElementById('undo');
+         const redoButton = document.getElementById('redo');
+         const saveButton = document.getElementById('save');
+         const loadButton = document.getElementById('load');
+         const selectOneButton = document.getElementById('selectOne');
+         const selectTwoButton = document.getElementById('selectTwo');
+         const selectThreeButton = document.getElementById('selectThree');
+         const nextTurnButton = document.getElementById('nextTurn');
+         const buttonOne = document.getElementById('1');
+         const buttonTwo = document.getElementById('2');
+         const buttonThree = document.getElementById('3');
+         const buttonO = document.getElementById('O');
+ 
+         // Event Listeners for Movement
+         upButton.addEventListener('click', () => moveCharacter(0, -1));
+         downButton.addEventListener('click', () => moveCharacter(0, 1));
+         leftButton.addEventListener('click', () => moveCharacter(-1, 0));
+         rightButton.addEventListener('click', () => moveCharacter(1, 0));
+ 
+         // Event Listeners for Actions
+         plantButton.addEventListener('click', () => plantAction());
+         interactButton.addEventListener('click', () => interactAction());
+ 
+         // Event Listeners for Additional Controls
+         undoButton.addEventListener('click', () => this.undo());
+         redoButton.addEventListener('click', () => this.redo());
+         saveButton.addEventListener('click', () => this.gridState.saveGame(this.returnGameState(), this)); 
+         loadButton.addEventListener('click', () => this.gridState.loadGame(this)); 
+ 
+         // Event Listeners for Plant Selection
+         selectOneButton.addEventListener('click', () => this.updateIndex(0));
+         selectTwoButton.addEventListener('click', () => this.updateIndex(1));
+         selectThreeButton.addEventListener('click', () =>this.updateIndex(2));
+         nextTurnButton.addEventListener('click', () => this.nextTurn());
+ 
     }
 
     update() {
