@@ -59,6 +59,33 @@ class GameScene extends Phaser.Scene {
 
         this.Translations = this.localization.find(lang => lang.language === this.language).translations;
 
+        //mobile movements
+        const moveCharacter = (deltaX, deltaY) => {
+            const playerSpeed = this.gridSize;
+            const newX = this.player.x + (deltaX * playerSpeed);
+            const newY = this.player.y + (deltaY * playerSpeed);
+            
+            // Snap to grid
+            const gridX = Math.floor(newX / this.gridSize);
+            const gridY = Math.floor(newY / this.gridSize);
+            
+            // Check if occupied
+            const isOccupied = this.plantManager.getPlaced().some(plant => 
+                plant.x === gridX && plant.y === gridY
+            );
+            
+            if (!isOccupied) {
+                this.saveState();
+                this.player.x = gridX * this.gridSize + this.gridSize / 2;
+                this.player.y = gridY * this.gridSize + this.gridSize / 2;
+                
+                // Update fading text based on direction
+                if (deltaY < 0) this.updateFadingText(this.Translations.movedup);
+                else if (deltaY > 0) this.updateFadingText(this.Translations.moveddown);
+                else if (deltaX < 0) this.updateFadingText(this.Translations.movedleft);
+                else if (deltaX > 0) this.updateFadingText(this.Translations.movedright);
+            }
+        };
         
 
 
