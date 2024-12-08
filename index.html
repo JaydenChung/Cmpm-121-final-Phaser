@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Graceful Garden</title>
+
+    <!-- Link to the web app manifest for PWA -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icons for the PWA (adjust paths as necessary) -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+    <meta name="theme-color" content="#FFFFFF"> <!-- Set the theme color for the address bar -->
+
     <!-- JS file links will go below here -->
     <script src="./lib/phaser.js"></script>
     <script src="./src/scenes/StartScene.js"></script>
@@ -15,5 +24,16 @@
     <!-- Phaser will handle the <body> tag for us 💪 -->
     <div id="phaser-game"></div>
     <span id="description"></span>
+
+    <script>
+        // Register the service worker for offline capabilities and caching
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('Service Worker registered!', reg))
+                    .catch(err => console.warn('Service Worker registration failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>
