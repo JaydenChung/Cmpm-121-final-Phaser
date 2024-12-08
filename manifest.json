@@ -1,11 +1,11 @@
 {
     "name": "Graceful Garden",
     "short_name": "Game",
-    "start_url": ".",
+    "start_url": "/index.html",
     "display": "standalone",
     "background_color": "#FFFFFF",
     "theme_color": "#000000",
-    "description": "A brief description of your game.",
+    "description": "",
     "icons": [
         {
             "src": "icons/icon-192x192.png",

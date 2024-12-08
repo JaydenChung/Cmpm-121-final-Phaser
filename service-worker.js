@@ -12,6 +12,7 @@ const ASSETS_TO_CACHE = [
     '/src/scenes/GameScene.js',
     '/assets/mapBG.png',
     '/assets/GRASS+.png',
+    '/assets/mapBG_tileset.tmx',
 
     // Add any other assets you want to cache (images, sounds, etc.)
 ];

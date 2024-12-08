@@ -9,8 +9,8 @@ let config = {
         pixelArt: true
     },
     scene: [StartScene, PreloadScene, GameScene],
-    width: 1000,
-    height: 900,
+    width: window.innerWidth,
+    height: window.innerHeight,
 }
 
 let game = new Phaser.Game(config);
