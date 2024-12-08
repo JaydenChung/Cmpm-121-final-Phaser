@@ -9,10 +9,19 @@ class StartScene extends Phaser.Scene {
     }
 
     create() {
+        document.getElementById('description').innerHTML = `
+        <h1>Graceful Garden
+        <pre>
+        [A] ⟵   [W] ↑   [S] ↓  [D] ⟶
+        [1] 1st Plant   [2] 2nd Plant   [3] 3rd Plant
+        [O] Next Turn
+        [Z] Undo        [X] Redo
+        [F] Save Game   [L] Load Game`;
         // Add background image
         const bg = this.add.image(0, 0, 'mapBG').setOrigin(0, 0);
         bg.displayWidth = this.sys.game.config.width;
         bg.displayHeight = this.sys.game.config.height;
+        console.log("On Tutorial");
 
         // Add title text
         this.add.text(
@@ -20,26 +29,6 @@ class StartScene extends Phaser.Scene {
             50,
             "Graceful Garden",
             { fontSize: '48px', color: '#ffffff', fontFamily: 'Arial' }
-        ).setOrigin(0.5);
-
-        // Add controls info
-        const controlsText = `
-        Controls:
-        W - Move Up
-        S - Move Down
-        A - Move Left
-        D - Move Right
-        O - End Turn
-        Z - Undo
-        X - Redo
-        F - Save Game
-        L - Load Game`;
-        
-        this.add.text(
-            this.sys.game.config.width / 2,
-            200,
-            controlsText,
-            { fontSize: '20px', color: '#ffffff', fontFamily: 'Courier', align: 'center', lineSpacing: 10 }
         ).setOrigin(0.5);
 
         // Add start button

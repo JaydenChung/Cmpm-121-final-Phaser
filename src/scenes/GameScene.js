@@ -101,6 +101,12 @@ class GameScene extends Phaser.Scene {
         this.plantManager = new PlantManager(this.gridSize, this.maxPlantsPerTurn);
         this.saveState('initial');
         //this.loadScenarioFromFile('tutorial');
+
+        //Preview Plant
+        this.previewSprite = this.add.sprite(0, 0, "tilemap", this.plantManager.grassSprites[this.plantIndex]);
+        this.previewSprite.scale = 4
+        this.previewSprite.alpha = 0.5;
+        this.previewSprite.setVisible(false);
     }
 
     update() {
@@ -139,11 +145,11 @@ class GameScene extends Phaser.Scene {
 
         // Plant Switch
         if (Phaser.Input.Keyboard.JustDown(this.oneKey)) {
-            this.plantIndex = 0;
+            this.updateIndex(0)
         } else if (Phaser.Input.Keyboard.JustDown(this.twoKey)) {
-            this.plantIndex = 1;
+            this.updateIndex(1)
         } else if (Phaser.Input.Keyboard.JustDown(this.threeKey)) {
-            this.plantIndex = 2;
+            this.updateIndex(2)
         }
     
         // Snap player position to the center of the grid
@@ -188,6 +194,9 @@ class GameScene extends Phaser.Scene {
         // Snap highlight to the nearest grid space
         const highlightX = Math.floor(pointer.x / this.gridSize) * this.gridSize + this.gridSize / 2;
         const highlightY = Math.floor(pointer.y / this.gridSize) * this.gridSize + this.gridSize / 2;
+
+        this.previewSprite.setPosition(highlightX, highlightY);
+        this.previewSprite.setVisible(true);
     
         // Update position of the highlight rectangle
         this.highlight.setPosition(highlightX, highlightY);
@@ -616,5 +625,8 @@ class GameScene extends Phaser.Scene {
         this.water = 0;
         this.resetResources();
     }
-
+    updateIndex(index){
+        this.plantIndex = index;
+        this.previewSprite.setTexture("tilemap", this.plantManager.grassSprites[this.plantIndex])
+    }
 }
