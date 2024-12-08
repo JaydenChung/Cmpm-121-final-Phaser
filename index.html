@@ -24,6 +24,72 @@
     <!-- Phaser will handle the <body> tag for us 💪 -->
     <div id="phaser-game"></div>
     <span id="description"></span>
+    
+    <div id="controls">
+        <!-- Movement Controls -->
+        <button id="up">↑</button>
+        <button id="down">↓</button>
+        <button id="left">←</button>
+        <button id="right">→</button>
+        
+        <!-- Action Buttons -->
+        <button id="plant">Plant</button>
+        <button id="interact">Interact</button>
+        
+        <!-- Additional Controls -->
+        <button id="undo">Undo</button>
+        <button id="redo">Redo</button>
+        <button id="save">Save</button>
+        <button id="load">Load</button>
+        
+        <button id="selectOne">1</button>
+        <button id="selectTwo">2</button>
+        <button id="selectThree">3</button>
+        
+        <button id="nextTurn">O</button> <!-- Assuming this is for the next turn -->
+    </div>
+
+    <style>
+        #controls {
+            position: fixed;
+            bottom: 10px; /* Adjust positioning */
+            left: 10px; /* Adjust positioning */
+            display: flex;
+            flex-direction: row; /* Change to row for better layout */
+            flex-wrap: wrap; /* Allow the buttons to wrap */
+            justify-content: center; /* Center the buttons */
+            background-color: rgba(255, 255, 255, 0.8); /* Optional: Background for visibility */
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 1000; /* Ensure controls are above the game canvas */
+        }
+    
+        button {
+            margin: 5px;
+            width: 60px;  /* Increased button size for touch */
+            height: 60px; /* Increased button size for touch */
+            font-size: 24px; /* Larger text for readability */
+            cursor: pointer; 
+            border: none; /* Remove default border */
+            background-color: #007bff; /* Primary color (adjust as needed) */
+            color: white; /* Text color */
+            border-radius: 5px; /* Rounded corners */
+            transition: background-color 0.3s; /* Smooth background transition */
+        }
+    
+        button:hover {
+            background-color: #0056b3; /* Darken button color on hover */
+        }
+    
+        /* Responsive styles */
+        @media (max-width: 600px) {
+            button {
+                width: 50px;  /* Adjusted width for smaller screens */
+                height: 50px; /* Adjusted height for smaller screens */
+                font-size: 20px; /* Reduced font size for smaller screens */
+            }
+        }
+    </style>
 
     <script>
         // Register the service worker for offline capabilities and caching
@@ -35,5 +101,7 @@
             });
         }
     </script>
+
+
 </body>
 </html>
