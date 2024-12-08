@@ -1,6 +1,5 @@
-//base class, shouldnt use
-class PlantManager{
-    constructor(g, m){
+class PlantManager {
+    constructor(g, m) {
         this.placedPlants = [];
         this.GridSize = g;
         this.plantsPlacedThisTurn = 0;
@@ -14,7 +13,6 @@ class PlantManager{
         };
 
         // Sprite sets for different plant types
-
         this.grassStage1 = 294;
         this.grassStage2 = 340;
         this.grassStage3 = 338;
@@ -30,213 +28,137 @@ class PlantManager{
         this.grassSprites = [this.grassStage1, this.grassStage2, this.grassStage3];
         this.shrubSprites = [this.shrubStage1, this.shrubStage2, this.shrubStage3];
         this.treeSprites = [this.treeStage1, this.treeStage2, this.treeStage3];
+
+        // Initialize plant registry
+        this.plantRegistry = new PlantRegistry();
+        this.initializePlantTypes();
     }
 
-    getPlaced(){
-        return this.placedPlants;
+    initializePlantTypes() {
+        // Basic Plant - Balanced growth requirements
+        this.plantRegistry.define('BasicPlant')
+            .requiresSunlight(3, 7)
+            .requiresWater(2, 6)
+            .withSprites(this.grassSprites[0], this.shrubSprites[0], this.treeSprites[0]);
 
+        // Desert Plant - Needs lots of sun, little water
+        this.plantRegistry.define('DesertPlant')
+            .requiresSunlight(6, 10)
+            .requiresWater(1, 4)
+            .withSprites(this.grassSprites[1], this.shrubSprites[1], this.treeSprites[1]);
+
+        // Jungle Plant - Needs lots of water, moderate sun, grows better near others
+        this.plantRegistry.define('JunglePlant')
+            .requiresSunlight(2, 6)
+            .requiresWater(5, 10)
+            .requiresNeighborType('JunglePlant')
+            .withSprites(this.grassSprites[2], this.shrubSprites[2], this.treeSprites[2]);
+    }
+
+    // Rest of your existing methods...
+    getPlaced() {
+        return this.placedPlants;
     }
 
     placePlant(pointer, plantIndex, game) {
         if (this.plantsPlacedThisTurn >= this.maxPlantsPerTurn) {
-            console.log("Maximum of 3 plants can be placed per turn.");
             game.updateFadingText('Maximum of 3 plants \ncan be placed per turn.');
-            console.log(game.language);
             return;
         }
         
-        // Get the grid position where the user clicked
         const plantX = Math.floor(pointer.x / this.GridSize) * this.GridSize + this.GridSize / 2;
         const plantY = Math.floor(pointer.y / this.GridSize) * this.GridSize + this.GridSize / 2;
     
-        // Get the player's current grid position
         const playerX = Math.floor(game.player.x / this.GridSize) * this.GridSize + this.GridSize / 2;
         const playerY = Math.floor(game.player.y / this.GridSize) * this.GridSize + this.GridSize / 2;
     
-        // Check if the clicked position is adjacent to the player's position
         const isAdjacent = (
-            (Math.abs(plantX - playerX) === this.GridSize && plantY === playerY) || // Left or right
-            (Math.abs(plantY - playerY) === this.GridSize && plantX === playerX)   // Up or down
+            (Math.abs(plantX - playerX) === this.GridSize && plantY === playerY) ||
+            (Math.abs(plantY - playerY) === this.GridSize && plantX === playerX)
         );
 
-        // Determine grid coordinates
         const gridX = Math.floor(plantX / this.GridSize);
         const gridY = Math.floor(plantY / this.GridSize);
 
-        // Check if the grid cell is already occupied by a plant
         const isOccupied = this.placedPlants.some(plant => 
             plant.x === gridX && plant.y === gridY
         );
     
         if (isAdjacent && !isOccupied) {
-            // Create a new plant
+            // Map plantIndex to plant type
+            const plantTypes = ['BasicPlant', 'DesertPlant', 'JunglePlant'];
+            const plantType = this.plantRegistry.get(plantTypes[plantIndex]);
+            
             const newPlant = game.add.sprite(plantX, plantY, "tilemap", this.grassSprites[plantIndex]);
             newPlant.scale = 4;
 
-            // Store plant with its growth information
             this.placedPlants.push({
                 sprite: newPlant,
                 x: gridX,
                 y: gridY,
                 currentStage: this.PlantGrowthStage.Grass,
-                spriteSetIndex: plantIndex
+                spriteSetIndex: plantIndex,
+                plantTypeName: plantTypes[plantIndex]
             });
 
             this.plantsPlacedThisTurn++;
         } else if (isOccupied) {
-            console.log("Cannot place a plant on an already occupied grid cell.");
             game.updateFadingText("Cannot place a plant on an\n already occupied grid cell.");
         } else {
-            console.log("You can only place plants adjacent to the player.");
             game.updateFadingText("You can only place plants\n adjacent to the player.");
         }
     }
 
-    reapPlant(plantObj, game) {
-        // Check if the plant is at the final stage (Tree)
-        if (plantObj.currentStage === this.PlantGrowthStage.Tree) {
-            // Increment score
-            game.score++;
-            game.scoreText.setText(`Score: ${game.score}`);
-
-            // Increment sowed plants
-            game.sowedPlants++;
-
-            // Remove the plant from the scene and placedPlants array
-            plantObj.sprite.destroy();
-            game.placedPlants = game.placedPlants.filter(plant => plant !== plantObj);
-
-            // Check if player has won
-            if (game.sowedPlants === 5) {
-                game.showWinScreen();
-            } else if (this.sowedPlants === game.maxSowedPlants) {
-                console.log(`Game is finished, total plants sowed: ${game.sowedPlants}`);
-                game.updateFadingText(`Game is finished, \ntotal plants sowed: ${game.sowedPlants}`);
-                
-                // Previous end game logic remains
-            }
-        } else {
-            console.log("You can only sow final stage plants (trees).");
-            game.updateFadingText("You can only sow \nfinal stage plants (trees).");
-        }
-    }
-
     growPlant(plantObj, game) {
-        const { sprite, x, y, currentStage, spriteSetIndex } = plantObj;
-        // Add bounds checking before accessing sun and water levels
-        if (x < 0 || x >= game.sunLevels.length || 
-            y < 0 || y >= game.sunLevels[0].length) {
-            console.log(x>=game.sunLevels.length, y >= game.sunLevels[0].length);
+        const { x, y, currentStage, spriteSetIndex, plantTypeName } = plantObj;
+        
+        if (x < 0 || x >= game.sunLevels.length || y < 0 || y >= game.sunLevels[0].length) {
             console.error(`Invalid grid coordinates: (${x}, ${y})`);
             return;
         }
 
-        // Get the sun and water levels for the current grid cell
-        const sunLevel = game.sunLevels[x][y];
-        const waterLevel = game.waterLevels[x][y];
-
-        // Check if the sun and water requirements are met for growth
-        const sunRequirement = 5; // Example sun requirement
-        const waterRequirement = 2; // Example water requirement
-    
-        if (sunLevel >= sunRequirement && waterLevel >= waterRequirement) {
-            // Advance to next growth stage if not already at final stage
+        const plantType = this.plantRegistry.get(plantTypeName);
+        
+        if (plantType && plantType.canGrow(game, x, y)) {
             if (currentStage < this.PlantGrowthStage.Tree) {
-                let nextSprites;
-                switch(currentStage) {
-                    case this.PlantGrowthStage.Grass:
-                        nextSprites = this.shrubSprites;
-                        break;
-                    case this.PlantGrowthStage.Shrub:
-                        nextSprites = this.treeSprites;
-                        break;
+                let nextSprite;
+                if (currentStage === this.PlantGrowthStage.Grass) {
+                    nextSprite = this.shrubSprites[spriteSetIndex];
+                } else if (currentStage === this.PlantGrowthStage.Shrub) {
+                    nextSprite = this.treeSprites[spriteSetIndex];
                 }
-                // Update sprite to next growth stage
-                sprite.setTexture("tilemap", nextSprites[spriteSetIndex]);
                 
-                // Update plant object with new stage
+                plantObj.sprite.setTexture("tilemap", nextSprite);
                 plantObj.currentStage++;
-                console.log(`Plant at (${x},${y}) has grown to stage ${plantObj.currentStage}`);
-            } else {
-                console.log(`Plant at (${x},${y}) is fully grown!`);
+                console.log(`${plantTypeName} at (${x},${y}) has grown to stage ${plantObj.currentStage}`);
+            }
+        }
+    }
+
+    reapPlant(plantObj, game) {
+        if (plantObj.currentStage === this.PlantGrowthStage.Tree) {
+            game.score++;
+            game.scoreText.setText(`Score: ${game.score}`);
+            game.sowedPlants++;
+
+            plantObj.sprite.destroy();
+            this.placedPlants = this.placedPlants.filter(plant => plant !== plantObj);
+
+            if (game.sowedPlants === 5) {
+                game.showWinScreen();
+            } else if (game.sowedPlants === game.maxSowedPlants) {
+                game.updateFadingText(`Game is finished, \ntotal plants sowed: ${game.sowedPlants}`);
             }
         } else {
-            console.log(`Not enough sun (${sunLevel}) or water (${waterLevel}) to grow the plant at (${x},${y}).`);
+            game.updateFadingText("You can only sow \nfinal stage plants (trees).");
         }
     }
 
-    getPlacedTurn(){
+    getPlacedTurn() {
         return this.plantsPlacedThisTurn;
     }
-    resetPlacedTurn(){
+
+    resetPlacedTurn() {
         this.plantsPlacedThisTurn = 0;
-    }
-
-    
-
-
-}
-
-
-class Plants{
-    constructor(){
-        this.sunLevel = 1;
-        this.waterLevel = 1;
-        this.plantStage = 1; //1 = seed, 3 = max, 0 = ded
-
-        //creates a random ID
-        this.plantID = Math.floor(342 * generateRandom()) + Math.floor(generateRandom()*2/342); 
-    }
-
-    getWater(){return this.waterLevel;}
-    setWater(water){this.water = water;}
-
-    getSun(){return this.sunLevel;}
-    setSun(){return this.sunLevel;}
-
-    getPlantStage(){return this.plantStage;}
-    setPlantStage(stage){
-        if (stage > 4 || stage < 0){
-            console.warn("setPlantStage() error: stage = ", stage, ", must be between 0 & 3");
-        }
-        this.plantStage = stage;
-    }
-
-    getID(){return this.plantID;}
-    setID(ID){this.plantID = ID;}
-}
-
-
-
-//use bellow instead
-
-function generateRandom(){
-    return Math.random() * (1 - 1000) + 1;
-}
-
-class PlantA extends Plants{
-    constructor(sprite){
-        super();
-        this.plantObject = sprite;
-        this.updateCondition = false;
-    }
-
-    setIfUpdate(){ //checks if the plant can be updated or not
-
-        if (true){ //to add conditions l8r, plant specific
-            this.updateCondition = true;
-        } else {
-            this.updateCondition = false;
-        }
-    }
-
-    updatePlant(){
-
-        if (this.updateCondition){
-            this.setPlantStage(this.getPlantStage + 1);
-        } else {
-            this.setPlantStage(this.getPlantStage - 1);
-        }
-
     }
 }

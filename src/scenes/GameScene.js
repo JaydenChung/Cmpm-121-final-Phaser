@@ -1,4 +1,7 @@
+
+
 class GameScene extends Phaser.Scene {
+    
     constructor() {
         super({ key: 'GameScene' });
 
@@ -270,10 +273,7 @@ class GameScene extends Phaser.Scene {
          const selectTwoButton = document.getElementById('selectTwo');
          const selectThreeButton = document.getElementById('selectThree');
          const nextTurnButton = document.getElementById('nextTurn');
-         const buttonOne = document.getElementById('1');
-         const buttonTwo = document.getElementById('2');
-         const buttonThree = document.getElementById('3');
-         const buttonO = document.getElementById('O');
+    
  
          // Event Listeners for Movement
          upButton.addEventListener('click', () => moveCharacter(0, -1));
