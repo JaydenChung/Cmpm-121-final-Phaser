@@ -37,7 +37,16 @@ class GameScene extends Phaser.Scene {
                     "movedup": "Moved up",
                     "moveddown": "Moved down",
                     "movedleft": "Moved left",
-                    "movedright": "Moved right"
+                    "movedright": "Moved right",
+                    "turn": "Turn: ",
+                    "score": "Score: ",
+                    "sun": "Sun: ",
+                    "water": "Water: ",
+                    "maxPlantsError": "Maximum of 3 plants \ncan be placed per turn.",
+                    "occupiedCellError": "Cannot place a plant on an\n already occupied grid cell.",
+                    "adjacentPlantError": "You can only place plants\n adjacent to the player.",
+                    "reapTreeError": "You can only sow \nfinal stage plants (trees).",
+                    "gameFinished": "Game is finished, \ntotal plants sowed: "
                 }
             },
             {
@@ -46,7 +55,16 @@ class GameScene extends Phaser.Scene {
                     "movedup": "向上移动",
                     "moveddown": "向下移动",
                     "movedleft": "向左移动",
-                    "movedright": "向右移动"
+                    "movedright": "向右移动",
+                    "turn": "回合: ",
+                    "score": "分数: ",
+                    "sun": "阳光: ",
+                    "water": "水: ",
+                    "maxPlantsError": "每回合最多只能放置3个植物",
+                    "occupiedCellError": "无法在已占用的网格单元上放置植物",
+                    "adjacentPlantError": "只能在玩家相邻的地方放置植物",
+                    "reapTreeError": "只能收获最终阶段的植物（树）",
+                    "gameFinished": "游戏结束，总共种植植物: "
                 }
             },
             {
@@ -55,7 +73,16 @@ class GameScene extends Phaser.Scene {
                     "movedup": "تحرك للأعلى",
                     "moveddown": "تحرك للأسفل",
                     "movedleft": "تحرك لليسار",
-                    "movedright": "تحرك لليمين"
+                    "movedright": "تحرك لليمين",
+                    "turn": "الدورة: ",
+                    "score": "النقاط: ",
+                    "sun": "الشمس: ",
+                    "water": "الماء: ",
+                    "maxPlantsError": "يمكن وضع 3 نباتات كحد أقصى في كل دورة",
+                    "occupiedCellError": "لا يمكن وضع نبات في خلية مشغولة",
+                    "adjacentPlantError": "يمكنك وضع النباتات فقط بجانب اللاعب",
+                    "reapTreeError": "يمكنك فقط حصاد النباتات في المرحلة النهائية (الأشجار)",
+                    "gameFinished": "اللعبة انتهت، مجموع النباتات المزروعة: "
                 }
             }
         ];
@@ -177,12 +204,12 @@ class GameScene extends Phaser.Scene {
         this.plantsPlacedThisTurn = 0;
         this.currentTurn = 1;
         this.maxPlantsPerTurn = 3;
-        this.turnText = this.add.text(10, 50, 'Turn: 1', { fontSize: '16px', color: '#fff' });
+        this.turnText = this.add.text(10, 50, `${this.Translations.turn}1`, { fontSize: '16px', color: '#fff' });
 
 
         // Score tracking
         this.score = 0;
-        this.scoreText = this.add.text(10, 70, 'Score: 0', { fontSize: '16px', color: '#fff' });
+        this.scoreText = this.add.text(10, 70, `${this.Translations.score}0`, { fontSize: '16px', color: '#fff' });
         // Reaping tracking
         this.sowedPlants = 0;
         this.maxSowedPlants = 2; // As per the Unity script
@@ -201,8 +228,8 @@ class GameScene extends Phaser.Scene {
         this.resetResources();
 
         // Display counters
-        this.sunText = this.add.text(10, 10, 'Sun: 0', { fontSize: '16px', color: '#fff' });
-        this.waterText = this.add.text(10, 30, 'Water: 0', { fontSize: '16px', color: '#fff' });
+        this.sunText = this.add.text(10, 10, `${this.Translations.sun}0`, { fontSize: '16px', color: '#fff' });
+        this.waterText = this.add.text(10, 30, `${this.Translations.water}0`, { fontSize: '16px', color: '#fff' });
 
         // Plant sprite selection
         this.plantIndex = 0;
@@ -495,7 +522,7 @@ class GameScene extends Phaser.Scene {
         // Existing turn advancement logic
         this.currentTurn++;
         this.plantsPlacedThisTurn = 0;
-        this.turnText.setText(`Turn: ${this.currentTurn}`);
+        this.turnText.setText(`${this.Translations.turn}${this.currentTurn}`);
         const turnEvent = this.scenarioEventTurns[this.currentTurn];
         if (turnEvent) {
             switch(turnEvent.type) {

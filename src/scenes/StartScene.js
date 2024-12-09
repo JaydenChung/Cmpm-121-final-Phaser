@@ -32,51 +32,49 @@ class StartScene extends Phaser.Scene {
 
         // Language selection buttons
         const languages = ['English', 'Chinese', 'Arabic'];
-        let selectedLanguage = 'English'; // Default
+    let selectedLanguage = 'English'; // Default
 
-        languages.forEach((language, index) => {
-            const button = this.add.text(
-                this.sys.game.config.width / 2,
-                200 + index * 50,
-                language,
-                { fontSize: '32px', color: '#ffffff', backgroundColor: '#0000ff', padding: { x: 20, y: 10 } }
-            ).setOrigin(0.5).setInteractive();
-
-            // Button hover effects
-            button.on('pointerover', () => {
-                button.setStyle({ backgroundColor: '#00ff00' });
-            });
-            button.on('pointerout', () => {
-                button.setStyle({ backgroundColor: '#0000ff' });
-            });
-
-            // Button click
-            button.on('pointerdown', () => {
-                selectedLanguage = language;
-                console.log(`Language selected: ${selectedLanguage}`);
-            });
-        });
-
-        // Start Game button
-        const startButton = this.add.text(
+    languages.forEach((language, index) => {
+        const button = this.add.text(
             this.sys.game.config.width / 2,
-            500,
-            "Start Game",
+            200 + index * 50,
+            language,
             { fontSize: '32px', color: '#ffffff', backgroundColor: '#0000ff', padding: { x: 20, y: 10 } }
         ).setOrigin(0.5).setInteractive();
 
-        startButton.on('pointerover', () => {
-            startButton.setStyle({ backgroundColor: '#00ff00' });
-        });
-        startButton.on('pointerout', () => {
-            startButton.setStyle({ backgroundColor: '#0000ff' });
+        // Button hover effects
+        button.on('pointerover', () => {
+            if (button.text !== selectedLanguage) { // Only change hover for non-selected
+                button.setStyle({ backgroundColor: '#00ff00' });
+            }
         });
 
-        // Start game and pass language to GameScene
-        startButton.on('pointerdown', () => {
-            console.log(selectedLanguage);
-            this.scene.start('PreloadScene', { language: selectedLanguage });  // Use selectedLanguage here
+        button.on('pointerout', () => {
+            if (button.text !== selectedLanguage) { // Only change hover for non-selected
+                button.setStyle({ backgroundColor: '#0000ff' });
+            } else {
+                button.setStyle({ color: '#ff0000' }); // Keep it red if selected
+            }
         });
+
+        // Button click
+        button.on('pointerdown', () => {
+            // Reset previously selected button color
+            languages.forEach((lang) => {
+                if (lang !== selectedLanguage) {
+                    const otherLangButton = this.children.entries.find((child) => child.text === lang);
+                    if (otherLangButton) {
+                        otherLangButton.setStyle({ color: '#ffffff', backgroundColor: '#0000ff' });
+                    }
+                }
+            });
+
+            // Select new language
+            selectedLanguage = language;
+            button.setStyle({ color: '#ff0000' }); // Set selected to red
+            console.log(`Language selected: ${selectedLanguage}`);
+        });
+    });
     }
 }
 

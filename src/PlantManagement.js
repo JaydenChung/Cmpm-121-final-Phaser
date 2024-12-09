@@ -62,7 +62,7 @@ class PlantManager {
 
     placePlant(pointer, plantIndex, game) {
         if (this.plantsPlacedThisTurn >= this.maxPlantsPerTurn) {
-            game.updateFadingText('Maximum of 3 plants \ncan be placed per turn.');
+            game.updateFadingText(game.Translations.maxPlantsError);
             return;
         }
         
@@ -103,9 +103,9 @@ class PlantManager {
 
             this.plantsPlacedThisTurn++;
         } else if (isOccupied) {
-            game.updateFadingText("Cannot place a plant on an\n already occupied grid cell.");
+            game.updateFadingText(game.Translations.occupiedCellError);
         } else {
-            game.updateFadingText("You can only place plants\n adjacent to the player.");
+            game.updateFadingText(game.Translations.adjacentPlantError);
         }
     }
 
@@ -138,7 +138,7 @@ class PlantManager {
     reapPlant(plantObj, game) {
         if (plantObj.currentStage === this.PlantGrowthStage.Tree) {
             game.score++;
-            game.scoreText.setText(`Score: ${game.score}`);
+            game.scoreText.setText(`${game.Translations.score}${game.score}`);
             game.sowedPlants++;
 
             plantObj.sprite.destroy();
@@ -147,10 +147,10 @@ class PlantManager {
             if (game.sowedPlants === 5) {
                 game.showWinScreen();
             } else if (game.sowedPlants === game.maxSowedPlants) {
-                game.updateFadingText(`Game is finished, \ntotal plants sowed: ${game.sowedPlants}`);
+                game.updateFadingText(`${game.Translations.gameFinished}${game.sowedPlants}`);
             }
         } else {
-            game.updateFadingText("You can only sow \nfinal stage plants (trees).");
+            game.updateFadingText(game.Translations.reapTreeError);
         }
     }
 
