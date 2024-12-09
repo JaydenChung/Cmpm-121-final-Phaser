@@ -35,11 +35,11 @@ From that point, it was a matter of creating input elements such as buttons that
 
 Our game supports three languages which are English, Chinese and Arabic. The process of implementing these languages starting off with the English text that was already present in our original design. We did not know anyone who were fluent with the languages that were selected. Because of this, we used ChatGPT so that the AI can auto-translate into another language. We decided to go for this approach in translation because we only needed to translate basic messages and titles. The prompts simply asking ChatGPT to translate the English text into Chinese and Arabic. 
 
-The game starts at the StartScene.js which displays the three buttons for each language. This allows the user to change the language setting inside the game. Our game should be able to support three languages into one version instead of three different hard-coded languages. The selection of languages should be straightforward for our players as it will be the first thing they see when opening the game. 
+The game starts at the StartScene.js which displays the three buttons for each language. This allows the user to change the language setting inside the game. Our game should be able to support three languages into one version instead of three different hard-coded languages. The selection of languages should be straightforward for our players as it is the  first thing they see when opening the game. 
 
 ### Mobile Installation
 
-We used progressive web apps (PWA) that allows mobile player to install the game which can be played locally or offline. A tutorial from [Scott Westover](https://gamedevacademy.org/phaser-progressive-web-apps-tutorial/) was valuable in understanding how to make our phaser game installable to mobile devices. Somes changes needed to be made where an web app manifest had to be added for PWA to work. 
+We used progressive web apps (PWA) that allows mobile player to install the game which can be played locally or offline. A tutorial from [Scott Westover](https://gamedevacademy.org/phaser-progressive-web-apps-tutorial/) was valuable in understanding how to make our phaser game installable for mobile devices. Somes changes needed to be made where an web app manifest had to be added for PWA to work. In additon, cache handling were developed that will install assets and data within the game.  
 
 ### Mobile Play (Offline)
 
