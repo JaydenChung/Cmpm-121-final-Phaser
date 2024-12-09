@@ -39,9 +39,7 @@ The game starts at the StartScene.js which displays the three buttons for each l
 
 ### Mobile Installation
 
-We used progressive web apps that allows mobile player to install the game which can be played locally or offline. A tutorial from Scott Westover
-
-Link Tutorial: [Scott Westover](https://gamedevacademy.org/phaser-progressive-web-apps-tutorial/)
+We used progressive web apps (PWA) that allows mobile player to install the game which can be played locally or offline. A tutorial from [Scott Westover](https://gamedevacademy.org/phaser-progressive-web-apps-tutorial/) was valuable in understanding how to make our phaser game installable to mobile devices. Somes changes needed to be made where an web app manifest had to be added for PWA to work. 
 
 ### Mobile Play (Offline)
 
